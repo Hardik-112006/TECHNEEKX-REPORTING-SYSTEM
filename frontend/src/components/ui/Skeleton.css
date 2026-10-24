@@ -1,0 +1,25 @@
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-muted) 0%,
+    #E5E7EB 50%,
+    var(--color-surface-muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.skeleton-circle {
+  border-radius: var(--radius-full) !important;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
