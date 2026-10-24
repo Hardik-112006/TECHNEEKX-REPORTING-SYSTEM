@@ -11,6 +11,7 @@ import { AnnouncementsView } from './views/AnnouncementsView'
 import { ActivityLogsView } from './views/ActivityLogsView'
 import { CareerProfileView } from './views/CareerProfileView'
 import { HackathonsView } from './views/HackathonsView'
+import { OfficialDocumentsView } from './views/OfficialDocumentsView'
 import { ComponentsShowcaseView } from './views/ComponentsShowcaseView'
 import { Button } from './components/ui'
 import { Sparkles, LogOut } from 'lucide-react'
@@ -56,6 +57,11 @@ const AuthenticatedApp: React.FC = () => {
         return {
           title: 'Hackathons & Recruitment',
           subtitle: 'National competitions, certificate verification, live leaderboards, and candidate selection'
+        }
+      case 'documents':
+        return {
+          title: 'Official Documents & Partnerships',
+          subtitle: 'Resource repositories, legal MoUs, event & sponsorship proposals, and partner network'
         }
       case 'teams':
         return {
@@ -171,6 +177,7 @@ const AuthenticatedApp: React.FC = () => {
       {activeNav === 'leaderboard' && <LeaderboardView />}
       {activeNav === 'career' && <CareerProfileView />}
       {activeNav === 'hackathons' && <HackathonsView />}
+      {activeNav === 'documents' && <OfficialDocumentsView />}
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}

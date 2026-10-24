@@ -21,4 +21,6 @@ urlpatterns = [
     path('api/career/', include('apps.career.urls')),
     # Hackathons, Certificates, Leaderboards & Recruitment API
     path('api/hackathons/', include('apps.hackathons.urls')),
+    # Official Documents, MoUs & Partnerships API
+    path('api/documents/', include('apps.documents.urls')),
 ]

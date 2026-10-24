@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.utils.text import slugify
+# pyrefly: ignore [missing-import]
 from apps.accounts.models import User
 
 class Hackathon(models.Model):

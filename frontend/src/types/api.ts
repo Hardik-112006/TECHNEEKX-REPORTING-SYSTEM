@@ -465,3 +465,90 @@ export interface RecruitmentAnalytics {
   total_under_review: number
   conversion_rate_percent: number
 }
+
+// -------------------------------------------------------------
+// POST-MVP: Phase 4 — Official Documents & Partnerships
+// -------------------------------------------------------------
+
+export interface ResourceMaterial {
+  id: number
+  title: string
+  category: 'Guide' | 'Template' | 'Cheatsheet' | 'Brand Asset' | 'Tool'
+  description?: string
+  file_url: string
+  min_role_tier: number
+  download_count: number
+  uploaded_by?: number | null
+  uploaded_by_name?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MouDocument {
+  id: number
+  organization_name: string
+  signatory_first_party: string
+  signatory_second_party: string
+  scope_of_work: string
+  validity_start: string
+  validity_end: string
+  status: 'Draft' | 'In Review' | 'Approved' | 'Signed' | 'Terminated'
+  review_notes?: string
+  created_by?: number
+  created_by_name?: string
+  approved_by?: number | null
+  approved_by_name?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface EventProposal {
+  id: number
+  title: string
+  event_type: string
+  target_date: string
+  expected_attendees: number
+  estimated_budget: string | number
+  venue_or_platform: string
+  description: string
+  status: 'Draft' | 'Submitted' | 'Under Review' | 'Approved' | 'Rejected'
+  reviewer_feedback?: string
+  submitted_by?: number
+  submitted_by_name?: string
+  reviewed_by?: number | null
+  reviewed_by_name?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SponsorshipProposal {
+  id: number
+  sponsor_organization: string
+  sponsorship_tier: 'Title' | 'Platinum' | 'Gold' | 'Silver' | 'Community'
+  amount_requested: string | number
+  contact_person: string
+  contact_email: string
+  deliverables_offered: string
+  status: 'Draft' | 'Proposed' | 'Negotiating' | 'Signed' | 'Declined'
+  notes?: string
+  handled_by?: number
+  handled_by_name?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CommunityPartner {
+  id: number
+  organization_name: string
+  partner_type: 'College Club' | 'Tech Community' | 'Corporate' | 'Media Partner' | 'Incubator'
+  website?: string
+  poc_name: string
+  poc_email: string
+  benefits_summary: string
+  status: 'Active' | 'Pending' | 'Inactive'
+  created_by?: number
+  created_by_name?: string
+  created_at: string
+  updated_at: string
+}
+

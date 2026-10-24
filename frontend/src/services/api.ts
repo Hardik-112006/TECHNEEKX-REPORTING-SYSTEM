@@ -30,7 +30,12 @@ import type {
   CertificateSubmission,
   HackathonRanking,
   CandidateShortlist,
-  RecruitmentAnalytics
+  RecruitmentAnalytics,
+  ResourceMaterial,
+  MouDocument,
+  EventProposal,
+  SponsorshipProposal,
+  CommunityPartner
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -637,6 +642,146 @@ export const hackathonApi = {
 
   async getRecruitmentAnalytics(hackathonId: number): Promise<RecruitmentAnalytics> {
     return request<RecruitmentAnalytics>(`/hackathons/${hackathonId}/recruitment-analytics/`)
+  }
+}
+
+// ----------------------------------------------------
+// POST-MVP: Phase 4 — Official Documents & Partnerships API
+// ----------------------------------------------------
+export const documentsApi = {
+  // Resources
+  async getResources(): Promise<PaginatedResponse<ResourceMaterial> | ResourceMaterial[]> {
+    return request<PaginatedResponse<ResourceMaterial> | ResourceMaterial[]>('/documents/resources/')
+  },
+
+  async createResource(data: {
+    title: string
+    description?: string
+    category?: 'Guide' | 'Template' | 'Cheatsheet' | 'Brand Asset' | 'Tool'
+    file_url: string
+    min_role_tier?: number
+  }): Promise<ResourceMaterial> {
+    return request<ResourceMaterial>('/documents/resources/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async trackResourceDownload(id: number): Promise<{ message: string; download_count: number }> {
+    return request<{ message: string; download_count: number }>(`/documents/resources/${id}/track_download/`, {
+      method: 'POST'
+    })
+  },
+
+  // MoUs
+  async getMous(): Promise<PaginatedResponse<MouDocument> | MouDocument[]> {
+    return request<PaginatedResponse<MouDocument> | MouDocument[]>('/documents/mous/')
+  },
+
+  async createMou(data: {
+    organization_name: string
+    signatory_first_party?: string
+    signatory_second_party: string
+    scope_of_work: string
+    validity_start: string
+    validity_end: string
+    status?: string
+  }): Promise<MouDocument> {
+    return request<MouDocument>('/documents/mous/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async reviewMou(id: number, data: { status: string; review_notes?: string }): Promise<MouDocument> {
+    return request<MouDocument>(`/documents/mous/${id}/review/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async downloadMouPdf(id: number): Promise<Blob> {
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch(`${API_BASE_URL}/documents/mous/${id}/pdf/`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) {
+      throw new Error('Failed to download MoU PDF')
+    }
+    return response.blob()
+  },
+
+  // Event Proposals
+  async getEventProposals(): Promise<PaginatedResponse<EventProposal> | EventProposal[]> {
+    return request<PaginatedResponse<EventProposal> | EventProposal[]>('/documents/event-proposals/')
+  },
+
+  async createEventProposal(data: {
+    title: string
+    event_type?: string
+    target_date: string
+    expected_attendees?: number
+    estimated_budget?: number | string
+    venue_or_platform: string
+    description: string
+  }): Promise<EventProposal> {
+    return request<EventProposal>('/documents/event-proposals/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async reviewEventProposal(id: number, data: { decision: 'Approved' | 'Rejected' | 'Under Review'; feedback?: string }): Promise<EventProposal> {
+    return request<EventProposal>(`/documents/event-proposals/${id}/review/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // Sponsorships
+  async getSponsorships(): Promise<PaginatedResponse<SponsorshipProposal> | SponsorshipProposal[]> {
+    return request<PaginatedResponse<SponsorshipProposal> | SponsorshipProposal[]>('/documents/sponsorships/')
+  },
+
+  async createSponsorship(data: {
+    sponsor_organization: string
+    sponsorship_tier?: 'Title' | 'Platinum' | 'Gold' | 'Silver' | 'Community'
+    amount_requested?: number | string
+    contact_person: string
+    contact_email: string
+    deliverables_offered: string
+    notes?: string
+    status?: string
+  }): Promise<SponsorshipProposal> {
+    return request<SponsorshipProposal>('/documents/sponsorships/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // Community Partners
+  async getPartners(): Promise<PaginatedResponse<CommunityPartner> | CommunityPartner[]> {
+    return request<PaginatedResponse<CommunityPartner> | CommunityPartner[]>('/documents/partners/')
+  },
+
+  async createPartner(data: {
+    organization_name: string
+    partner_type?: 'College Club' | 'Tech Community' | 'Corporate' | 'Media Partner' | 'Incubator'
+    website?: string
+    poc_name: string
+    poc_email: string
+    benefits_summary: string
+    status?: string
+  }): Promise<CommunityPartner> {
+    return request<CommunityPartner>('/documents/partners/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
   }
 }
 

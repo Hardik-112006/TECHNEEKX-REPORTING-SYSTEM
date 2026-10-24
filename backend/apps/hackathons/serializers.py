@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
+# pyrefly: ignore [missing-import]
 from apps.hackathons.models import (
     Hackathon,
     Participant,
