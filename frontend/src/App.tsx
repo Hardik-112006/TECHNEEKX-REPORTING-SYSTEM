@@ -12,6 +12,7 @@ import { ActivityLogsView } from './views/ActivityLogsView'
 import { CareerProfileView } from './views/CareerProfileView'
 import { HackathonsView } from './views/HackathonsView'
 import { OfficialDocumentsView } from './views/OfficialDocumentsView'
+import { AnalyticsView } from './views/AnalyticsView'
 import { ComponentsShowcaseView } from './views/ComponentsShowcaseView'
 import { Button } from './components/ui'
 import { Sparkles, LogOut } from 'lucide-react'
@@ -62,6 +63,11 @@ const AuthenticatedApp: React.FC = () => {
         return {
           title: 'Official Documents & Partnerships',
           subtitle: 'Resource repositories, legal MoUs, event & sponsorship proposals, and partner network'
+        }
+      case 'analytics':
+        return {
+          title: 'Advanced Analytics & Intelligence',
+          subtitle: 'Data-backed performance trends, bottleneck diagnostics, and multi-format report exports'
         }
       case 'teams':
         return {
@@ -178,6 +184,7 @@ const AuthenticatedApp: React.FC = () => {
       {activeNav === 'career' && <CareerProfileView />}
       {activeNav === 'hackathons' && <HackathonsView />}
       {activeNav === 'documents' && <OfficialDocumentsView />}
+      {activeNav === 'analytics' && <AnalyticsView />}
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}

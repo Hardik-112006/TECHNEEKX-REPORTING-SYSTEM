@@ -552,3 +552,96 @@ export interface CommunityPartner {
   updated_at: string
 }
 
+// -------------------------------------------------------------
+// POST-MVP: Phase 5 — Advanced Analytics & Report Exports
+// -------------------------------------------------------------
+
+export interface AnalyticsSummary {
+  total_tasks: number
+  approved_tasks: number
+  in_progress_tasks: number
+  submitted_tasks: number
+  assigned_tasks: number
+  changes_requested_tasks: number
+  completion_rate_percent: number
+  overdue_tasks_count: number
+  pending_reviews_count: number
+  date_range: {
+    start_date: string
+    end_date: string
+    days: number | string
+  }
+}
+
+export interface CompletionTrendPoint {
+  date: string
+  created: number
+  completed: number
+}
+
+export interface TeamPerformanceMetric {
+  team_id: number
+  name: string
+  total_tasks: number
+  approved_tasks: number
+  overdue_tasks: number
+  completion_rate_percent: number
+  members_count: number
+}
+
+export interface MemberContributionMetric {
+  user_id: number
+  name: string
+  email: string
+  role: string
+  total_points: number
+  tasks_assigned: number
+  tasks_approved: number
+  approval_rate_percent: number
+}
+
+export interface UrgentPendingItem {
+  task_id: number
+  title: string
+  team_name: string
+  assigned_name: string
+  submitted_at: string
+  age_hours: number
+  priority: 'Urgent' | 'Normal'
+}
+
+export interface PendingAnalysis {
+  total_pending: number
+  under_24h: number
+  from_24_to_48h: number
+  over_48h: number
+  urgent_items: UrgentPendingItem[]
+}
+
+export interface HackathonAnalyticsData {
+  total_hackathons: number
+  total_participants: number
+  certificates: {
+    submitted: number
+    verified: number
+    rejected: number
+    pending: number
+  }
+  recruitment: {
+    total_shortlisted: number
+    accepted: number
+    rejected: number
+    under_review: number
+    conversion_rate_percent: number
+  }
+}
+
+export interface AnalyticsOverview {
+  summary: AnalyticsSummary
+  trends: CompletionTrendPoint[]
+  team_performance: TeamPerformanceMetric[]
+  member_contributions: MemberContributionMetric[]
+  pending_analysis: PendingAnalysis
+  hackathon_analytics: HackathonAnalyticsData
+}
+

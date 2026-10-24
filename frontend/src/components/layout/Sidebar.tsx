@@ -12,7 +12,8 @@ import {
   Layers,
   Briefcase,
   Award,
-  FileText
+  FileText,
+  TrendingUp
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import './Sidebar.css';
@@ -53,6 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'career', label: 'Career & Resume', icon: <Briefcase size={18} /> },
     { id: 'hackathons', label: 'Hackathons & Recruitment', icon: <Award size={18} /> },
     { id: 'documents', label: 'Official Documents', icon: <FileText size={18} /> },
+    { id: 'analytics', label: 'Analytics & Reports', icon: <TrendingUp size={18} /> },
     { id: 'teams', label: 'Teams & Groups', icon: <Users size={18} /> },
     { id: 'announcements', label: 'Announcements', icon: <Megaphone size={18} /> },
     { id: 'activity', label: 'Activity Logs', icon: <Activity size={18} /> },

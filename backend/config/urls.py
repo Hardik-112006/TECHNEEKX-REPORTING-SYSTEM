@@ -23,4 +23,6 @@ urlpatterns = [
     path('api/hackathons/', include('apps.hackathons.urls')),
     # Official Documents, MoUs & Partnerships API
     path('api/documents/', include('apps.documents.urls')),
+    # Advanced Analytics & Report Exports API
+    path('api/analytics/', include('apps.analytics.urls')),
 ]

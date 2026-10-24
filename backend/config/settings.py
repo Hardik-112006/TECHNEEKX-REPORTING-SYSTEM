@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.career',
     'apps.hackathons',
     'apps.documents',
+    'apps.analytics',
 ]
 
 MIDDLEWARE = [

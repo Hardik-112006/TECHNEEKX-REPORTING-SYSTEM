@@ -35,7 +35,8 @@ import type {
   MouDocument,
   EventProposal,
   SponsorshipProposal,
-  CommunityPartner
+  CommunityPartner,
+  AnalyticsOverview
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -784,4 +785,87 @@ export const documentsApi = {
     })
   }
 }
+
+// ----------------------------------------------------
+// POST-MVP: Phase 5 — Advanced Analytics & Report Exports API
+// ----------------------------------------------------
+export const analyticsApi = {
+  async getOverview(params?: {
+    days?: number | string
+    start_date?: string
+    end_date?: string
+    team_id?: number | string
+  }): Promise<AnalyticsOverview> {
+    const q = new URLSearchParams()
+    if (params?.days) q.append('days', String(params.days))
+    if (params?.start_date) q.append('start_date', params.start_date)
+    if (params?.end_date) q.append('end_date', params.end_date)
+    if (params?.team_id) q.append('team_id', String(params.team_id))
+    const qs = q.toString() ? `?${q.toString()}` : ''
+    return request<AnalyticsOverview>(`/analytics/overview/${qs}`)
+  },
+
+  async downloadTasksCsv(params?: { team_id?: number | string; status?: string }): Promise<Blob> {
+    const q = new URLSearchParams()
+    if (params?.team_id) q.append('team_id', String(params.team_id))
+    if (params?.status) q.append('status', params.status)
+    const qs = q.toString() ? `?${q.toString()}` : ''
+
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(`${API_BASE_URL}/analytics/export/tasks/${qs}`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) throw new Error('Failed to export tasks CSV')
+    return response.blob()
+  },
+
+  async downloadTeamsCsv(): Promise<Blob> {
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(`${API_BASE_URL}/analytics/export/teams/`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) throw new Error('Failed to export teams CSV')
+    return response.blob()
+  },
+
+  async downloadMembersCsv(): Promise<Blob> {
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(`${API_BASE_URL}/analytics/export/members/`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) throw new Error('Failed to export members CSV')
+    return response.blob()
+  },
+
+  async downloadPdfReport(params?: { days?: number | string; team_id?: number | string }): Promise<Blob> {
+    const q = new URLSearchParams()
+    if (params?.days) q.append('days', String(params.days))
+    if (params?.team_id) q.append('team_id', String(params.team_id))
+    const qs = q.toString() ? `?${q.toString()}` : ''
+
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(`${API_BASE_URL}/analytics/export/pdf/${qs}`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) throw new Error('Failed to generate PDF operations report')
+    return response.blob()
+  }
+}
+
 
