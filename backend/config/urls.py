@@ -27,4 +27,6 @@ urlpatterns = [
     path('api/analytics/', include('apps.analytics.urls')),
     # Automated Reminders & Escalations API
     path('api/notifications/', include('apps.notifications.urls')),
+    # Multi-Level Approval Workflows API
+    path('api/approvals/', include('apps.approvals.urls')),
 ]

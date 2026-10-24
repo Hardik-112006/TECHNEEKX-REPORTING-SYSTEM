@@ -38,7 +38,8 @@ import type {
   CommunityPartner,
   AnalyticsOverview,
   NotificationItem,
-  NotificationSummary
+  NotificationSummary,
+  ApprovalWorkflow
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -901,6 +902,61 @@ export const notificationsApi = {
     })
   }
 }
+
+// ----------------------------------------------------
+// POST-MVP: Phase 7 — Multi-Level Approval Workflows API
+// ----------------------------------------------------
+export const approvalsApi = {
+  async getWorkflows(params?: {
+    status?: string
+    stage?: number
+    my_queue?: boolean
+    submitted_by_me?: boolean
+  }): Promise<PaginatedResponse<ApprovalWorkflow> | ApprovalWorkflow[]> {
+    const q = new URLSearchParams()
+    if (params?.status) q.append('status', params.status)
+    if (params?.stage) q.append('stage', String(params.stage))
+    if (params?.my_queue) q.append('my_queue', 'true')
+    if (params?.submitted_by_me) q.append('submitted_by_me', 'true')
+    const qs = q.toString() ? `?${q.toString()}` : ''
+    return request<PaginatedResponse<ApprovalWorkflow> | ApprovalWorkflow[]>(`/approvals/${qs}`)
+  },
+
+  async getWorkflow(id: number): Promise<ApprovalWorkflow> {
+    return request<ApprovalWorkflow>(`/approvals/${id}/`)
+  },
+
+  async createWorkflow(data: {
+    content_type: string
+    object_id: number
+    title: string
+    description?: string
+    total_stages?: number
+  }): Promise<ApprovalWorkflow> {
+    return request<ApprovalWorkflow>('/approvals/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async submitDecision(
+    id: number,
+    data: { decision: 'Approved' | 'Changes Requested' | 'Rejected'; feedback?: string }
+  ): Promise<ApprovalWorkflow> {
+    return request<ApprovalWorkflow>(`/approvals/${id}/decision/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async resubmit(id: number, data: { notes?: string }): Promise<ApprovalWorkflow> {
+    return request<ApprovalWorkflow>(`/approvals/${id}/resubmit/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
 
 
 

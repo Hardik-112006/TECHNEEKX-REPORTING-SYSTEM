@@ -666,3 +666,36 @@ export interface NotificationSummary {
   recent: NotificationItem[]
 }
 
+// -------------------------------------------------------------
+// POST-MVP: Phase 7 — Multi-Level Approval Workflows
+// -------------------------------------------------------------
+
+export interface ApprovalStageAudit {
+  audit_id: number
+  stage_number: number
+  stage_name: string
+  reviewer: number
+  reviewer_name: string
+  reviewer_role: string
+  decision: 'Approved' | 'Changes Requested' | 'Rejected'
+  feedback: string
+  decided_at: string
+}
+
+export interface ApprovalWorkflow {
+  workflow_id: number
+  content_type: string
+  object_id: number
+  title: string
+  description: string
+  submitter: number
+  submitter_name: string
+  current_stage: number
+  total_stages: number
+  status: 'Pending Stage 1' | 'Pending Stage 2' | 'Approved' | 'Changes Requested' | 'Rejected'
+  stage_history: ApprovalStageAudit[]
+  created_at: string
+  updated_at: string
+}
+
+

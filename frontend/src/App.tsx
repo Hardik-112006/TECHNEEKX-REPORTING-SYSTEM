@@ -13,6 +13,7 @@ import { CareerProfileView } from './views/CareerProfileView'
 import { HackathonsView } from './views/HackathonsView'
 import { OfficialDocumentsView } from './views/OfficialDocumentsView'
 import { AnalyticsView } from './views/AnalyticsView'
+import { ApprovalsView } from './views/ApprovalsView'
 import { ComponentsShowcaseView } from './views/ComponentsShowcaseView'
 import { Button } from './components/ui'
 import { Sparkles, LogOut } from 'lucide-react'
@@ -68,6 +69,11 @@ const AuthenticatedApp: React.FC = () => {
         return {
           title: 'Advanced Analytics & Intelligence',
           subtitle: 'Data-backed performance trends, bottleneck diagnostics, and multi-format report exports'
+        }
+      case 'approvals':
+        return {
+          title: 'Multi-Level Approvals & Governance',
+          subtitle: 'Sequential verification: Stage 1 Lead Review → Stage 2 Executive Sign-off'
         }
       case 'teams':
         return {
@@ -185,6 +191,7 @@ const AuthenticatedApp: React.FC = () => {
       {activeNav === 'hackathons' && <HackathonsView />}
       {activeNav === 'documents' && <OfficialDocumentsView />}
       {activeNav === 'analytics' && <AnalyticsView />}
+      {activeNav === 'approvals' && <ApprovalsView />}
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}
