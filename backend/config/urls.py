@@ -25,4 +25,6 @@ urlpatterns = [
     path('api/documents/', include('apps.documents.urls')),
     # Advanced Analytics & Report Exports API
     path('api/analytics/', include('apps.analytics.urls')),
+    # Automated Reminders & Escalations API
+    path('api/notifications/', include('apps.notifications.urls')),
 ]

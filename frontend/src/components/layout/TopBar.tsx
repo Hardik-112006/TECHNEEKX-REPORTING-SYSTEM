@@ -1,6 +1,7 @@
 import React from 'react';
-import { Menu, Bell, Search, ShieldCheck } from 'lucide-react';
+import { Menu, Search, ShieldCheck } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 import './TopBar.css';
 
 export interface TopBarProps {
@@ -53,15 +54,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         )}
 
         <div className="topbar-actions">
-          <button
-            type="button"
-            className="topbar-icon-btn"
-            title="Notifications"
-            aria-label="Notifications"
-          >
-            <Bell size={18} />
-            <span className="notif-dot" />
-          </button>
+          <NotificationCenter />
 
           <div className="topbar-role-badge">
             <ShieldCheck size={14} className="role-icon" />

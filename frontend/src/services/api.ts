@@ -36,7 +36,9 @@ import type {
   EventProposal,
   SponsorshipProposal,
   CommunityPartner,
-  AnalyticsOverview
+  AnalyticsOverview,
+  NotificationItem,
+  NotificationSummary
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -867,5 +869,38 @@ export const analyticsApi = {
     return response.blob()
   }
 }
+
+// ----------------------------------------------------
+// POST-MVP: Phase 6 — Automated Reminders & Escalations API
+// ----------------------------------------------------
+export const notificationsApi = {
+  async getNotifications(unreadOnly = false): Promise<PaginatedResponse<NotificationItem> | NotificationItem[]> {
+    const qs = unreadOnly ? '?unread_only=true' : ''
+    return request<PaginatedResponse<NotificationItem> | NotificationItem[]>(`/notifications/${qs}`)
+  },
+
+  async getSummary(): Promise<NotificationSummary> {
+    return request<NotificationSummary>('/notifications/summary/')
+  },
+
+  async markAsRead(id: number): Promise<{ message: string; notification_id: number }> {
+    return request<{ message: string; notification_id: number }>(`/notifications/${id}/read/`, {
+      method: 'POST'
+    })
+  },
+
+  async markAllRead(): Promise<{ message: string; updated_count: number }> {
+    return request<{ message: string; updated_count: number }>('/notifications/mark-all-read/', {
+      method: 'POST'
+    })
+  },
+
+  async triggerReminders(): Promise<{ message: string; summary: any }> {
+    return request<{ message: string; summary: any }>('/notifications/trigger-reminders/', {
+      method: 'POST'
+    })
+  }
+}
+
 
 

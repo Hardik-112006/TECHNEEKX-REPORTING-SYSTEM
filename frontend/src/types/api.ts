@@ -645,3 +645,24 @@ export interface AnalyticsOverview {
   hackathon_analytics: HackathonAnalyticsData
 }
 
+// -------------------------------------------------------------
+// POST-MVP: Phase 6 — Automated Reminders & Escalations
+// -------------------------------------------------------------
+
+export interface NotificationItem {
+  notification_id: number
+  title: string
+  message: string
+  notification_type: 'DEADLINE_APPROACHING' | 'TASK_OVERDUE' | 'PENDING_REVIEW' | 'ESCALATION' | 'SYSTEM'
+  severity: 'info' | 'warning' | 'critical'
+  is_read: boolean
+  action_url?: string
+  related_task_id?: number | null
+  created_at: string
+}
+
+export interface NotificationSummary {
+  unread_count: number
+  recent: NotificationItem[]
+}
+
