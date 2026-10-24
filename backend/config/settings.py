@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.scoring',
     'apps.announcements',
     'apps.activity',
+    'apps.career',
 ]
 
 MIDDLEWARE = [

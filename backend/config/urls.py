@@ -17,4 +17,6 @@ urlpatterns = [
     path('api/', include('apps.announcements.urls')),
     # Activity & Audit History API
     path('api/', include('apps.activity.urls')),
+    # Career Profile & ATS Resume API
+    path('api/career/', include('apps.career.urls')),
 ]

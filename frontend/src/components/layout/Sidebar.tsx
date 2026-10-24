@@ -9,7 +9,8 @@ import {
   Activity,
   LogOut,
   X,
-  Layers
+  Layers,
+  Briefcase
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import './Sidebar.css';
@@ -47,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'tasks', label: 'Tasks', icon: <CheckSquare size={18} />, badge: '3' },
     { id: 'submissions', label: 'Submissions', icon: <UploadCloud size={18} /> },
     { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={18} /> },
+    { id: 'career', label: 'Career & Resume', icon: <Briefcase size={18} /> },
     { id: 'teams', label: 'Teams & Groups', icon: <Users size={18} /> },
     { id: 'announcements', label: 'Announcements', icon: <Megaphone size={18} /> },
     { id: 'activity', label: 'Activity Logs', icon: <Activity size={18} /> },

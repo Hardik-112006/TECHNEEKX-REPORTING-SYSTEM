@@ -16,7 +16,14 @@ import type {
   PaginatedResponse,
   Role,
   UserSummary,
-  ApiError
+  ApiError,
+  CareerProfile,
+  Education,
+  PortfolioProject,
+  Achievement,
+  ContributionHighlight,
+  ResumeConfiguration,
+  PublicCareerProfile
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -454,5 +461,103 @@ export const activityApi = {
     if (params.page) query.set('page', String(params.page))
     const queryString = query.toString()
     return request<PaginatedResponse<HistoryLog>>(`/activity/${queryString ? `?${queryString}` : ''}`)
+  }
+}
+
+// ----------------------------------------------------
+// POST-MVP: Phase 1 — Career Profiles & ATS Resume API
+// ----------------------------------------------------
+export const careerApi = {
+  async getProfile(): Promise<CareerProfile> {
+    return request<CareerProfile>('/career/me/')
+  },
+
+  async updateProfile(data: Partial<CareerProfile>): Promise<CareerProfile> {
+    return request<CareerProfile>('/career/me/', {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async addEducation(data: Omit<Education, 'id'>): Promise<Education> {
+    return request<Education>('/career/educations/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async deleteEducation(id: number): Promise<void> {
+    return request<void>(`/career/educations/${id}/`, {
+      method: 'DELETE'
+    })
+  },
+
+  async addProject(data: Omit<PortfolioProject, 'id'>): Promise<PortfolioProject> {
+    return request<PortfolioProject>('/career/projects/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async deleteProject(id: number): Promise<void> {
+    return request<void>(`/career/projects/${id}/`, {
+      method: 'DELETE'
+    })
+  },
+
+  async addAchievement(data: Omit<Achievement, 'id'>): Promise<Achievement> {
+    return request<Achievement>('/career/achievements/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async deleteAchievement(id: number): Promise<void> {
+    return request<void>(`/career/achievements/${id}/`, {
+      method: 'DELETE'
+    })
+  },
+
+  async syncContributions(): Promise<{ message: string; contributions: ContributionHighlight[] }> {
+    return request<{ message: string; contributions: ContributionHighlight[] }>('/career/contributions/sync/', {
+      method: 'POST'
+    })
+  },
+
+  async toggleContribution(id: number): Promise<ContributionHighlight> {
+    return request<ContributionHighlight>(`/career/contributions/${id}/toggle/`, {
+      method: 'PATCH'
+    })
+  },
+
+  async getResumeConfig(): Promise<ResumeConfiguration> {
+    return request<ResumeConfiguration>('/career/resume/config/')
+  },
+
+  async updateResumeConfig(data: Partial<ResumeConfiguration>): Promise<ResumeConfiguration> {
+    return request<ResumeConfiguration>('/career/resume/config/', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async downloadResumePdf(): Promise<Blob> {
+    const token = getStoredAccessToken()
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const response = await fetch(`${API_BASE_URL}/career/resume/pdf/`, {
+      method: 'GET',
+      headers
+    })
+    if (!response.ok) {
+      throw new Error('Failed to download resume PDF')
+    }
+    return response.blob()
+  },
+
+  async getPublicProfile(slug: string): Promise<PublicCareerProfile> {
+    return request<PublicCareerProfile>(`/career/public/${slug}/`)
   }
 }

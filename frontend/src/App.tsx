@@ -9,6 +9,7 @@ import { LeaderboardView } from './views/LeaderboardView'
 import { TeamsView } from './views/TeamsView'
 import { AnnouncementsView } from './views/AnnouncementsView'
 import { ActivityLogsView } from './views/ActivityLogsView'
+import { CareerProfileView } from './views/CareerProfileView'
 import { ComponentsShowcaseView } from './views/ComponentsShowcaseView'
 import { Button } from './components/ui'
 import { Sparkles, LogOut } from 'lucide-react'
@@ -44,6 +45,11 @@ const AuthenticatedApp: React.FC = () => {
         return {
           title: 'Community Leaderboard',
           subtitle: 'Live ranking standings and tamper-proof points ledger'
+        }
+      case 'career':
+        return {
+          title: 'Career Profile & ATS Resume',
+          subtitle: 'Verified credentials, portfolio showcase, and ATS-optimized document builder'
         }
       case 'teams':
         return {
@@ -157,6 +163,7 @@ const AuthenticatedApp: React.FC = () => {
       )}
       {activeNav === 'tasks' && <TasksView />}
       {activeNav === 'leaderboard' && <LeaderboardView />}
+      {activeNav === 'career' && <CareerProfileView />}
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}

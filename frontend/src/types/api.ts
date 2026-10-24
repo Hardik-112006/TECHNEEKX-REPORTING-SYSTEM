@@ -229,3 +229,105 @@ export interface ApiError {
   errors?: Record<string, string | string[]>
   status?: number
 }
+
+// -------------------------------------------------------------
+// POST-MVP: Phase 1 — Career Profiles & ATS Resume Builder
+// -------------------------------------------------------------
+
+export interface Education {
+  id: number
+  institution: string
+  degree: string
+  field_of_study: string
+  graduation_year: number
+  grade?: string
+  description?: string
+}
+
+export interface PortfolioProject {
+  id: number
+  title: string
+  description: string
+  technologies: string
+  github_link?: string
+  live_url?: string
+  is_featured: boolean
+  include_in_resume: boolean
+  order: number
+}
+
+export interface Achievement {
+  id: number
+  title: string
+  issuer: string
+  issue_date?: string | null
+  credential_url?: string
+  description?: string
+  include_in_resume: boolean
+}
+
+export interface ContributionHighlight {
+  id: number
+  task?: number | null
+  title: string
+  description: string
+  points_earned: number
+  verified_at: string
+  include_in_resume: boolean
+}
+
+export interface ResumeConfiguration {
+  id: number
+  template_style: string
+  custom_headline?: string
+  include_summary: boolean
+  include_education: boolean
+  include_projects: boolean
+  include_skills: boolean
+  include_achievements: boolean
+  include_community_contributions: boolean
+}
+
+export interface CareerProfile {
+  id: number
+  user_id: number
+  user_name: string
+  user_email: string
+  headline: string
+  target_role: string
+  target_company: string
+  experience_years: string | number
+  bio: string
+  skills: string[]
+  phone: string
+  linkedin_url: string
+  github_url: string
+  portfolio_url: string
+  location: string
+  visibility: 'Public' | 'Community' | 'Private'
+  shareable_slug: string
+  educations: Education[]
+  projects: PortfolioProject[]
+  achievements: Achievement[]
+  contributions: ContributionHighlight[]
+  resume_config?: ResumeConfiguration
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicCareerProfile {
+  user_name: string
+  headline: string
+  target_role: string
+  target_company: string
+  bio: string
+  skills: string[]
+  linkedin_url: string
+  github_url: string
+  portfolio_url: string
+  location: string
+  educations: Education[]
+  projects: PortfolioProject[]
+  achievements: Achievement[]
+  contributions: ContributionHighlight[]
+}
