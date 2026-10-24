@@ -23,7 +23,14 @@ import type {
   Achievement,
   ContributionHighlight,
   ResumeConfiguration,
-  PublicCareerProfile
+  PublicCareerProfile,
+  Hackathon,
+  Participant,
+  HackathonTeam,
+  CertificateSubmission,
+  HackathonRanking,
+  CandidateShortlist,
+  RecruitmentAnalytics
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -561,3 +568,75 @@ export const careerApi = {
     return request<PublicCareerProfile>(`/career/public/${slug}/`)
   }
 }
+
+// ----------------------------------------------------
+// POST-MVP: Phases 2 & 3 — Hackathons, Certificates & Recruitment API
+// ----------------------------------------------------
+export const hackathonApi = {
+  async getHackathons(): Promise<PaginatedResponse<Hackathon> | Hackathon[]> {
+    return request<PaginatedResponse<Hackathon> | Hackathon[]>('/hackathons/events/')
+  },
+
+  async getHackathon(id: number): Promise<Hackathon> {
+    return request<Hackathon>(`/hackathons/events/${id}/`)
+  },
+
+  async register(hackathonId: number, data: { phone?: string; college_or_org?: string; full_name?: string; email?: string }): Promise<Participant> {
+    return request<Participant>(`/hackathons/events/${hackathonId}/register/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async createTeam(hackathonId: number, data: { team_name: string; project_title?: string; project_repo?: string; project_demo?: string; submission_notes?: string }): Promise<HackathonTeam> {
+    return request<HackathonTeam>(`/hackathons/events/${hackathonId}/create_team/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async joinTeam(hackathonId: number, teamId: number, roleInTeam = 'Member'): Promise<HackathonTeam> {
+    return request<HackathonTeam>(`/hackathons/events/${hackathonId}/join_team/`, {
+      method: 'POST',
+      body: JSON.stringify({ team_id: teamId, role_in_team: roleInTeam })
+    })
+  },
+
+  async submitCertificate(data: { hackathon: number; category: string; certificate_url: string; team?: number | null }): Promise<CertificateSubmission> {
+    return request<CertificateSubmission>('/hackathons/certificates/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async getCertificates(): Promise<PaginatedResponse<CertificateSubmission> | CertificateSubmission[]> {
+    return request<PaginatedResponse<CertificateSubmission> | CertificateSubmission[]>('/hackathons/certificates/')
+  },
+
+  async reviewCertificate(submissionId: number, data: { decision: 'Approved' | 'Rejected'; feedback?: string; override_points?: number }): Promise<CertificateSubmission> {
+    return request<CertificateSubmission>(`/hackathons/certificates/${submissionId}/review/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async getLeaderboard(hackathonId: number): Promise<{ hackathon: Hackathon; individual_rankings: HackathonRanking[]; team_rankings: HackathonTeam[] }> {
+    return request<{ hackathon: Hackathon; individual_rankings: HackathonRanking[]; team_rankings: HackathonTeam[] }>(`/hackathons/${hackathonId}/leaderboard/`)
+  },
+
+  async getShortlist(hackathonId: number, limit = 10): Promise<{ hackathon_id: number; shortlist_count: number; candidates: CandidateShortlist[] }> {
+    return request<{ hackathon_id: number; shortlist_count: number; candidates: CandidateShortlist[] }>(`/hackathons/${hackathonId}/shortlist/?limit=${limit}`)
+  },
+
+  async updateShortlistDecision(hackathonId: number, data: { candidate_id: number; decision: string; offered_role?: string; decision_reason?: string }): Promise<CandidateShortlist> {
+    return request<CandidateShortlist>(`/hackathons/${hackathonId}/shortlist/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async getRecruitmentAnalytics(hackathonId: number): Promise<RecruitmentAnalytics> {
+    return request<RecruitmentAnalytics>(`/hackathons/${hackathonId}/recruitment-analytics/`)
+  }
+}
+

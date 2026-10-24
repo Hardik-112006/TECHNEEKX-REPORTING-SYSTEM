@@ -1,0 +1,204 @@
+.hackathons-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.hackathon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.hackathon-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.hackathon-subtitle {
+  font-size: 0.95rem;
+  color: #4B5563;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
+}
+
+.hackathon-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Tabs */
+.hackathon-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #E5E7EB;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+.hackathon-tab-btn {
+  padding: 0.75rem 1.25rem;
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: #4B5563;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.hackathon-tab-btn:hover {
+  color: #635BFF;
+}
+
+.hackathon-tab-btn.active {
+  color: #635BFF;
+  border-bottom-color: #635BFF;
+}
+
+/* Grid & Cards */
+.hackathon-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 800px) {
+  .hackathon-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.hackathon-card {
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.hackathon-card:hover {
+  border-color: #C7D2FE;
+  box-shadow: 0 4px 12px rgba(99, 91, 255, 0.08);
+}
+
+.hackathon-card-selected {
+  border-color: #635BFF !important;
+  box-shadow: 0 0 0 2px rgba(99, 91, 255, 0.2) !important;
+}
+
+.hackathon-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.hackathon-tagline {
+  font-size: 0.9rem;
+  color: #4B5563;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+.hackathon-meta-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #374151;
+  background-color: #F9FAFB;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hackathon-stats-pills {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4B5563;
+  background-color: #EEF2F6;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.scoring-rules-box {
+  font-size: 0.8rem;
+  color: #1E1B4B;
+  background-color: #EEF2FF;
+  border: 1px solid #E0E7FF;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+}
+
+.hackathon-picker,
+.shortlist-filter-select,
+.cert-category-select {
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #D1D5DB;
+  background-color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  outline: none;
+}
+
+.hackathon-picker:focus,
+.shortlist-filter-select:focus,
+.cert-category-select:focus {
+  border-color: #635BFF;
+  box-shadow: 0 0 0 2px rgba(99, 91, 255, 0.2);
+}
+
+.cert-category-select {
+  width: 100%;
+}
+
+/* Analytics Summary Bar */
+.analytics-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.analytics-stat-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #6B7280;
+}

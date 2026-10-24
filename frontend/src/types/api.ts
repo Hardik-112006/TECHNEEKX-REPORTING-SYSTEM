@@ -331,3 +331,137 @@ export interface PublicCareerProfile {
   achievements: Achievement[]
   contributions: ContributionHighlight[]
 }
+
+// -------------------------------------------------------------
+// POST-MVP: Phase 2 & 3 — Hackathons, Certificates & Recruitment
+// -------------------------------------------------------------
+
+export interface Hackathon {
+  id: number
+  title: string
+  slug: string
+  tagline: string
+  description: string
+  theme: string
+  banner_url?: string
+  registration_start: string
+  registration_end: string
+  start_date: string
+  end_date: string
+  min_team_size: number
+  max_team_size: number
+  allow_external_participants: boolean
+  is_active: boolean
+  scoring_rules?: Record<string, number>
+  participants_count?: number
+  teams_count?: number
+  is_registration_open?: boolean
+  created_at: string
+}
+
+export interface Participant {
+  id: number
+  hackathon: number
+  user?: number | null
+  user_name?: string
+  user_email?: string
+  full_name: string
+  email: string
+  phone?: string
+  college_or_org?: string
+  is_external: boolean
+  status: 'Registered' | 'Confirmed' | 'Submitted' | 'Disqualified' | 'Completed'
+  registered_at: string
+}
+
+export interface HackathonTeamMember {
+  id: number
+  participant: number
+  participant_name: string
+  participant_email: string
+  role_in_team: string
+  joined_at: string
+}
+
+export interface HackathonTeam {
+  id: number
+  hackathon: number
+  team_name: string
+  leader: number
+  leader_name: string
+  leader_email: string
+  project_title?: string
+  project_repo?: string
+  project_demo?: string
+  submission_notes?: string
+  members?: HackathonTeamMember[]
+  member_count?: number
+  created_at: string
+}
+
+export interface CertificateSubmission {
+  id: number
+  hackathon: number
+  hackathon_title?: string
+  participant: number
+  participant_name?: string
+  participant_email?: string
+  team?: number | null
+  category: '1st' | '2nd' | '3rd' | 'Top 10' | 'Special Mention' | 'Participation'
+  certificate_url: string
+  verification_status: 'Pending' | 'Approved' | 'Rejected'
+  reviewer?: number | null
+  reviewer_name?: string | null
+  reviewed_at?: string | null
+  reviewer_feedback?: string
+  points_awarded: number
+  is_reward_granted: boolean
+  submitted_at: string
+}
+
+export interface HackathonRanking {
+  id: number
+  hackathon: number
+  hackathon_title?: string
+  participant: number
+  participant_name: string
+  participant_email: string
+  team?: number | null
+  team_name?: string
+  rank_position: number
+  hackathon_points: number
+  is_verified: boolean
+  tie_break_score: number
+  notes?: string
+  created_at: string
+}
+
+export interface CandidateShortlist {
+  id: number
+  hackathon: number
+  participant: number
+  participant_name: string
+  participant_email: string
+  team?: number | null
+  team_name?: string
+  decision: 'Under Review' | 'Accepted' | 'Rejected' | 'On Hold'
+  reviewer?: number | null
+  reviewer_name?: string | null
+  decision_reason?: string
+  offered_role?: string
+  reviewed_at?: string | null
+  created_at: string
+}
+
+export interface RecruitmentAnalytics {
+  hackathon_title: string
+  total_participants: number
+  total_teams: number
+  certificates_submitted: number
+  certificates_verified: number
+  total_shortlisted: number
+  total_accepted: number
+  total_rejected: number
+  total_under_review: number
+  conversion_rate_percent: number
+}

@@ -19,4 +19,6 @@ urlpatterns = [
     path('api/', include('apps.activity.urls')),
     # Career Profile & ATS Resume API
     path('api/career/', include('apps.career.urls')),
+    # Hackathons, Certificates, Leaderboards & Recruitment API
+    path('api/hackathons/', include('apps.hackathons.urls')),
 ]
