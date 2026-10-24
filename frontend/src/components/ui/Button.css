@@ -92,6 +92,15 @@
   background-color: #DC2626;
 }
 
+.btn-success {
+  background-color: var(--color-success);
+  color: var(--color-text-inverse);
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #15803D;
+}
+
 /* Spinner Animation */
 .btn-spinner {
   animation: spin 1s linear infinite;

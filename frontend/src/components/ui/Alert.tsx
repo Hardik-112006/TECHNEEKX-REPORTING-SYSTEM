@@ -5,7 +5,8 @@ import './Alert.css';
 export interface AlertProps {
   variant?: 'info' | 'success' | 'warning' | 'danger';
   title?: string;
-  children: React.ReactNode;
+  description?: React.ReactNode;
+  children?: React.ReactNode;
   onClose?: () => void;
   className?: string;
 }
@@ -13,6 +14,7 @@ export interface AlertProps {
 export const Alert: React.FC<AlertProps> = ({
   variant = 'info',
   title,
+  description,
   children,
   onClose,
   className = ''
@@ -36,7 +38,7 @@ export const Alert: React.FC<AlertProps> = ({
         {renderIcon()}
         <div className="alert-text-block">
           {title && <h4 className="alert-title">{title}</h4>}
-          <div className="alert-body">{children}</div>
+          <div className="alert-body">{children || description}</div>
         </div>
       </div>
       {onClose && (

@@ -11,7 +11,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   label?: string;
   error?: string;
   helperText?: string;
-  options: SelectOption[];
+  options?: SelectOption[];
   placeholder?: string;
 }
 
@@ -21,6 +21,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   helperText,
   options,
   placeholder,
+  children,
   className = '',
   id,
   required,
@@ -45,11 +46,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
           {...props}
         >
           {placeholder && <option value="">{placeholder}</option>}
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+          {options
+            ? options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))
+            : children}
         </select>
         <ChevronDown className="select-arrow" size={16} />
       </div>

@@ -1,0 +1,458 @@
+import type {
+  AuthResponse,
+  UserDetail,
+  Task,
+  TaskCreatePayload,
+  ProofSubmitPayload,
+  ReviewCreatePayload,
+  TaskProof,
+  Review,
+  TeamSummary,
+  TeamDetail,
+  Group,
+  Performance,
+  Announcement,
+  HistoryLog,
+  PaginatedResponse,
+  Role,
+  UserSummary,
+  ApiError
+} from '../types/api'
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
+
+const TOKEN_KEY_ACCESS = 'techneekx_access_token'
+const TOKEN_KEY_REFRESH = 'techneekx_refresh_token'
+
+export function getStoredAccessToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY_ACCESS)
+}
+
+export function getStoredRefreshToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY_REFRESH)
+}
+
+export function storeTokens(access: string, refresh?: string): void {
+  localStorage.setItem(TOKEN_KEY_ACCESS, access)
+  if (refresh) {
+    localStorage.setItem(TOKEN_KEY_REFRESH, refresh)
+  }
+}
+
+export function clearTokens(): void {
+  localStorage.removeItem(TOKEN_KEY_ACCESS)
+  localStorage.removeItem(TOKEN_KEY_REFRESH)
+}
+
+let isRefreshing = false
+let refreshSubscribers: Array<(token: string) => void> = []
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb)
+}
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token))
+  refreshSubscribers = []
+}
+
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  isRetry = false
+): Promise<T> {
+  const url = `${API_BASE_URL}/${endpoint.replace(/^\/+/, '')}`
+  const headers = new Headers(options.headers || {})
+
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json')
+  }
+
+  const token = getStoredAccessToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  let response: Response
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers
+    })
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Network error'
+    throw {
+      message: `Unable to connect to TechNeekX server (${errorMsg}). Please ensure backend is running.`,
+      status: 0
+    } as ApiError
+  }
+
+  // Handle Token Expiration and Refresh (HTTP 401)
+  if (response.status === 401 && !isRetry && !endpoint.includes('auth/login') && !endpoint.includes('auth/refresh')) {
+    const refreshToken = getStoredRefreshToken()
+    if (refreshToken) {
+      if (!isRefreshing) {
+        isRefreshing = true
+        try {
+          const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh: refreshToken })
+          })
+
+          if (refreshRes.ok) {
+            const data = await refreshRes.json()
+            const newAccess = data.access
+            storeTokens(newAccess)
+            isRefreshing = false
+            onRefreshed(newAccess)
+            return request<T>(endpoint, options, true)
+          } else {
+            clearTokens()
+            isRefreshing = false
+            window.dispatchEvent(new CustomEvent('auth:expired'))
+          }
+        } catch {
+          clearTokens()
+          isRefreshing = false
+          window.dispatchEvent(new CustomEvent('auth:expired'))
+        }
+      } else {
+        // Wait for token refresh to finish
+        return new Promise<T>((resolve) => {
+          subscribeTokenRefresh((newToken: string) => {
+            headers.set('Authorization', `Bearer ${newToken}`)
+            resolve(request<T>(endpoint, { ...options, headers }, true))
+          })
+        })
+      }
+    }
+  }
+
+  // Handle No Content (204)
+  if (response.status === 204) {
+    return {} as T
+  }
+
+  let data: any
+  try {
+    data = await response.json()
+  } catch {
+    data = null
+  }
+
+  if (!response.ok) {
+    let message = 'An unexpected server error occurred.'
+    if (data) {
+      if (typeof data.error === 'string') {
+        message = data.error
+      } else if (typeof data.detail === 'string') {
+        message = data.detail
+      } else if (Array.isArray(data.non_field_errors)) {
+        message = data.non_field_errors.join(' ')
+      } else if (typeof data === 'object') {
+        const firstKey = Object.keys(data)[0]
+        if (firstKey) {
+          const val = data[firstKey]
+          message = Array.isArray(val) ? `${firstKey}: ${val.join(', ')}` : `${firstKey}: ${val}`
+        }
+      }
+    }
+
+    const errorPayload: ApiError = {
+      message,
+      errors: typeof data === 'object' && data !== null ? data : undefined,
+      status: response.status
+    }
+    throw errorPayload
+  }
+
+  return data as T
+}
+
+// ----------------------------------------------------
+// Authentication API
+// ----------------------------------------------------
+export const authApi = {
+  async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
+    const res = await request<AuthResponse>('/auth/login/', {
+      method: 'POST',
+      body: JSON.stringify(credentials)
+    })
+    storeTokens(res.tokens.access, res.tokens.refresh)
+    return res
+  },
+
+  async register(data: { name: string; email: string; password: string }): Promise<{ message: string; user: UserSummary }> {
+    return request<{ message: string; user: UserSummary }>('/auth/register/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async logout(): Promise<void> {
+    const refresh = getStoredRefreshToken()
+    try {
+      if (refresh) {
+        await request('/auth/logout/', {
+          method: 'POST',
+          body: JSON.stringify({ refresh })
+        })
+      }
+    } finally {
+      clearTokens()
+    }
+  },
+
+  async getMe(): Promise<UserDetail> {
+    return request<UserDetail>('/auth/me/')
+  },
+
+  async updateMe(data: Partial<UserDetail>): Promise<{ message: string; user: UserDetail }> {
+    return request<{ message: string; user: UserDetail }>('/auth/me/', {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async getRoles(): Promise<Role[]> {
+    return request<Role[]>('/roles/')
+  }
+}
+
+// ----------------------------------------------------
+// Tasks & Workflow API
+// ----------------------------------------------------
+export const tasksApi = {
+  async getTasks(params: {
+    status?: string
+    team_id?: number
+    assigned_to?: number
+    overdue?: boolean
+    search?: string
+    page?: number
+  } = {}): Promise<PaginatedResponse<Task>> {
+    const query = new URLSearchParams()
+    if (params.status && params.status !== 'All') query.set('status', params.status)
+    if (params.team_id) query.set('team_id', String(params.team_id))
+    if (params.assigned_to) query.set('assigned_to', String(params.assigned_to))
+    if (params.overdue) query.set('overdue', 'true')
+    if (params.search) query.set('search', params.search)
+    if (params.page) query.set('page', String(params.page))
+
+    const queryString = query.toString()
+    return request<PaginatedResponse<Task>>(`/tasks/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async getTask(taskId: number): Promise<Task> {
+    return request<Task>(`/tasks/${taskId}/`)
+  },
+
+  async createTask(data: TaskCreatePayload): Promise<Task> {
+    const payload = {
+      title: data.title,
+      description: data.description,
+      deadline: data.deadline,
+      assigned_to_id: data.assigned_to_id ?? data.assigned_to ?? null,
+      team_id: data.team_id ?? data.team ?? null
+    }
+    return request<Task>('/tasks/', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    })
+  },
+
+  async updateTask(taskId: number, data: Partial<TaskCreatePayload>): Promise<Task> {
+    return request<Task>(`/tasks/${taskId}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async deleteTask(taskId: number): Promise<void> {
+    return request<void>(`/tasks/${taskId}/`, {
+      method: 'DELETE'
+    })
+  },
+
+  async startTask(taskId: number): Promise<Task> {
+    return request<Task>(`/tasks/${taskId}/start/`, {
+      method: 'POST'
+    })
+  },
+
+  async submitProof(taskId: number, proof: ProofSubmitPayload): Promise<{
+    message: string
+    proof: TaskProof
+    task_status: string
+  }> {
+    return request<{ message: string; proof: TaskProof; task_status: string }>(
+      `/tasks/${taskId}/submit/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(proof)
+      }
+    )
+  },
+
+  async reviewTask(taskId: number, review: ReviewCreatePayload): Promise<{
+    message: string
+    review: Review
+    task_status: string
+    points_awarded: number
+    scoring_info: string
+  }> {
+    return request<{
+      message: string
+      review: Review
+      task_status: string
+      points_awarded: number
+      scoring_info: string
+    }>(`/tasks/${taskId}/review/`, {
+      method: 'POST',
+      body: JSON.stringify(review)
+    })
+  },
+
+  async getTaskSubmissions(taskId: number): Promise<TaskProof[]> {
+    return request<TaskProof[]>(`/tasks/${taskId}/submissions/`)
+  },
+
+  async getTaskReviews(taskId: number): Promise<Review[]> {
+    return request<Review[]>(`/tasks/${taskId}/reviews/`)
+  }
+}
+
+// ----------------------------------------------------
+// Teams & Groups API
+// ----------------------------------------------------
+export const teamsApi = {
+  async getTeams(params: { type?: string; parent_team_id?: number | 'null' } = {}): Promise<PaginatedResponse<TeamSummary>> {
+    const query = new URLSearchParams()
+    if (params.type) query.set('type', params.type)
+    if (params.parent_team_id !== undefined) query.set('parent_team_id', String(params.parent_team_id))
+    const queryString = query.toString()
+    return request<PaginatedResponse<TeamSummary>>(`/teams/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async getTeam(teamId: number): Promise<TeamDetail> {
+    return request<TeamDetail>(`/teams/${teamId}/`)
+  },
+
+  async createTeam(data: { name: string; type: string; description?: string; parent_team?: number | null }): Promise<TeamSummary> {
+    return request<TeamSummary>('/teams/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async getTeamMembers(teamId: number): Promise<UserSummary[]> {
+    return request<UserSummary[]>(`/teams/${teamId}/members/`)
+  },
+
+  async addMember(teamId: number, userId: number): Promise<{ message: string; team_id: number; user_id: number }> {
+    return request<{ message: string; team_id: number; user_id: number }>(`/teams/${teamId}/add_member/`, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId })
+    })
+  },
+
+  async removeMember(teamId: number, userId: number): Promise<{ message: string; team_id: number; user_id: number }> {
+    return request<{ message: string; team_id: number; user_id: number }>(`/teams/${teamId}/remove_member/`, {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId })
+    })
+  },
+
+  async getGroups(params: { team_id?: number } = {}): Promise<PaginatedResponse<Group>> {
+    const query = new URLSearchParams()
+    if (params.team_id) query.set('team_id', String(params.team_id))
+    const queryString = query.toString()
+    return request<PaginatedResponse<Group>>(`/groups/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async createGroup(data: { name: string; team: number; description?: string }): Promise<Group> {
+    return request<Group>('/groups/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
+// ----------------------------------------------------
+// Users API
+// ----------------------------------------------------
+export const usersApi = {
+  async getUsers(params: {
+    role_id?: number
+    team_id?: number
+    status?: string
+    search?: string
+    page?: number
+  } = {}): Promise<PaginatedResponse<UserSummary>> {
+    const query = new URLSearchParams()
+    if (params.role_id) query.set('role_id', String(params.role_id))
+    if (params.team_id) query.set('team_id', String(params.team_id))
+    if (params.status) query.set('status', params.status)
+    if (params.search) query.set('search', params.search)
+    if (params.page) query.set('page', String(params.page))
+    const queryString = query.toString()
+    return request<PaginatedResponse<UserSummary>>(`/users/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async getUser(userId: number): Promise<UserDetail> {
+    return request<UserDetail>(`/users/${userId}/`)
+  },
+
+  async manageUser(userId: number, data: { role_id?: number; team_id?: number | null; status?: string }): Promise<{ message: string; user: UserDetail }> {
+    return request<{ message: string; user: UserDetail }>(`/users/${userId}/manage/`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
+// ----------------------------------------------------
+// Scoring & Leaderboard API
+// ----------------------------------------------------
+export const scoringApi = {
+  async getLeaderboard(page = 1): Promise<PaginatedResponse<Performance>> {
+    const query = new URLSearchParams()
+    if (page > 1) query.set('page', String(page))
+    const queryString = query.toString()
+    return request<PaginatedResponse<Performance>>(`/leaderboard/${queryString ? `?${queryString}` : ''}`)
+  }
+}
+
+// ----------------------------------------------------
+// Announcements API
+// ----------------------------------------------------
+export const announcementsApi = {
+  async getAnnouncements(page = 1): Promise<PaginatedResponse<Announcement>> {
+    const query = new URLSearchParams()
+    if (page > 1) query.set('page', String(page))
+    const queryString = query.toString()
+    return request<PaginatedResponse<Announcement>>(`/announcements/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async createAnnouncement(data: { title: string; content: string; target_role?: string }): Promise<Announcement> {
+    return request<Announcement>('/announcements/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
+// ----------------------------------------------------
+// Activity Audit History API
+// ----------------------------------------------------
+export const activityApi = {
+  async getActivityLogs(params: { action?: string; user_id?: number; page?: number } = {}): Promise<PaginatedResponse<HistoryLog>> {
+    const query = new URLSearchParams()
+    if (params.action) query.set('action', params.action)
+    if (params.user_id) query.set('user_id', String(params.user_id))
+    if (params.page) query.set('page', String(params.page))
+    const queryString = query.toString()
+    return request<PaginatedResponse<HistoryLog>>(`/activity/${queryString ? `?${queryString}` : ''}`)
+  }
+}

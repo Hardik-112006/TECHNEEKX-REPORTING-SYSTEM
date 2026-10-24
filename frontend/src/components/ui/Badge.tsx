@@ -3,7 +3,7 @@ import './Badge.css';
 
 export type TaskStatus = 'Assigned' | 'In Progress' | 'Submitted' | 'Approved' | 'Changes Requested';
 export type UserStatus = 'Active' | 'Inactive' | 'Pending';
-export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'outline';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
