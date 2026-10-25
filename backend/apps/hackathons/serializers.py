@@ -32,10 +32,10 @@ class HackathonSerializer(serializers.ModelSerializer):
         return obj.is_active and (obj.registration_start <= now <= obj.registration_end)
 
     def validate(self, attrs):
-        start_date = attrs.get('start_date')
-        end_date = attrs.get('end_date')
-        reg_start = attrs.get('registration_start')
-        reg_end = attrs.get('registration_end')
+        start_date = attrs.get('start_date', getattr(self.instance, 'start_date', None))
+        end_date = attrs.get('end_date', getattr(self.instance, 'end_date', None))
+        reg_start = attrs.get('registration_start', getattr(self.instance, 'registration_start', None))
+        reg_end = attrs.get('registration_end', getattr(self.instance, 'registration_end', None))
 
         if reg_start and reg_end and reg_start >= reg_end:
             raise serializers.ValidationError({"registration_end": "Registration end date must be after registration start date."})

@@ -35,6 +35,22 @@ class Task(models.Model):
         db_column='team_id',
         related_name='team_tasks'
     )
+    group = models.ForeignKey(
+        'teams.Group',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        db_column='group_id',
+        related_name='group_tasks'
+    )
+    parent_task = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        db_column='parent_task_id',
+        related_name='subtasks'
+    )
     status = models.CharField(max_length=30, default='Assigned', choices=STATUS_CHOICES)
     deadline = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now, db_column='created_at')
@@ -44,6 +60,8 @@ class Task(models.Model):
         indexes = [
             models.Index(fields=['assigned_to', 'status'], name='idx_tasks_assigned_to_status'),
             models.Index(fields=['team', 'status'], name='idx_tasks_team_status'),
+            models.Index(fields=['group', 'status'], name='idx_tasks_group_status'),
+            models.Index(fields=['parent_task'], name='idx_tasks_parent_task'),
             models.Index(fields=['deadline'], name='idx_tasks_deadline'),
         ]
         ordering = ['-created_at']

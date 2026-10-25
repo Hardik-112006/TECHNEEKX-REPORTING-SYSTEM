@@ -1,6 +1,7 @@
 import type {
   AuthResponse,
   UserDetail,
+  DemoAccount,
   Task,
   TaskCreatePayload,
   ProofSubmitPayload,
@@ -39,7 +40,13 @@ import type {
   AnalyticsOverview,
   NotificationItem,
   NotificationSummary,
-  ApprovalWorkflow
+  ApprovalWorkflow,
+  BoardWarning,
+  WarningAuditLog,
+  RemovalReview,
+  BoardMonitoringMetrics,
+  SearchResults,
+  LiveEtaResponse
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -240,6 +247,26 @@ export const authApi = {
 
   async getRoles(): Promise<Role[]> {
     return request<Role[]>('/roles/')
+  },
+
+  async getPublicGroups(): Promise<Array<{
+    group_id: number
+    name: string
+    team_id: number
+    team_name: string | null
+    description?: string
+  }>> {
+    return request<Array<{
+      group_id: number
+      name: string
+      team_id: number
+      team_name: string | null
+      description?: string
+    }>>('/auth/groups/')
+  },
+
+  async getDemoAccounts(): Promise<DemoAccount[]> {
+    return request<DemoAccount[]>('/auth/demo-accounts/')
   }
 }
 
@@ -343,6 +370,27 @@ export const tasksApi = {
 
   async getTaskReviews(taskId: number): Promise<Review[]> {
     return request<Review[]>(`/tasks/${taskId}/reviews/`)
+  }
+}
+
+export const submissionsApi = {
+  submitProof: tasksApi.submitProof,
+  reviewTask: tasksApi.reviewTask,
+  getSubmissions: tasksApi.getTaskSubmissions,
+  getReviews: tasksApi.getTaskReviews,
+  async getAllSubmissions(params: { task_id?: number; submitted_by?: number } = {}): Promise<PaginatedResponse<TaskProof> | TaskProof[]> {
+    const query = new URLSearchParams()
+    if (params.task_id) query.set('task_id', String(params.task_id))
+    if (params.submitted_by) query.set('submitted_by', String(params.submitted_by))
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return request<PaginatedResponse<TaskProof> | TaskProof[]>(`/submissions/${qs}`)
+  },
+  async getAllReviews(params: { task_id?: number; reviewer_id?: number } = {}): Promise<PaginatedResponse<Review> | Review[]> {
+    const query = new URLSearchParams()
+    if (params.task_id) query.set('task_id', String(params.task_id))
+    if (params.reviewer_id) query.set('reviewer_id', String(params.reviewer_id))
+    const qs = query.toString() ? `?${query.toString()}` : ''
+    return request<PaginatedResponse<Review> | Review[]>(`/reviews/${qs}`)
   }
 }
 
@@ -458,10 +506,18 @@ export const announcementsApi = {
     return request<PaginatedResponse<Announcement>>(`/announcements/${queryString ? `?${queryString}` : ''}`)
   },
 
-  async createAnnouncement(data: { title: string; content: string; target_role?: string }): Promise<Announcement> {
+  async createAnnouncement(data: FormData | {
+    title: string
+    content: string
+    category?: string
+    external_link?: string
+    drive_link?: string
+    target_role?: string
+  }): Promise<Announcement> {
+    const isForm = data instanceof FormData
     return request<Announcement>('/announcements/', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: isForm ? data : JSON.stringify(data)
     })
   }
 }
@@ -477,6 +533,23 @@ export const activityApi = {
     if (params.page) query.set('page', String(params.page))
     const queryString = query.toString()
     return request<PaginatedResponse<HistoryLog>>(`/activity/${queryString ? `?${queryString}` : ''}`)
+  },
+
+  async exportCsv(params: { action?: string; user_id?: number } = {}): Promise<Blob> {
+    const query = new URLSearchParams()
+    if (params.action) query.set('action', params.action)
+    if (params.user_id) query.set('user_id', String(params.user_id))
+    const queryString = query.toString()
+    const token = getStoredAccessToken()
+    const response = await fetch(`${API_BASE_URL}/activity/export-csv/${queryString ? `?${queryString}` : ''}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    })
+    if (!response.ok) {
+      throw new Error(`Audit export failed with status ${response.status}`)
+    }
+    return response.blob()
   }
 }
 
@@ -956,6 +1029,105 @@ export const approvalsApi = {
     })
   }
 }
+
+export const boardApi = {
+  async getBoardOverview(): Promise<BoardMonitoringMetrics> {
+    return request<BoardMonitoringMetrics>('/board/overview/')
+  },
+
+  async getWarnings(params?: { target_user?: number; status?: string }): Promise<PaginatedResponse<BoardWarning> | BoardWarning[]> {
+    const q = new URLSearchParams()
+    if (params?.target_user) q.append('target_user', String(params.target_user))
+    if (params?.status) q.append('status', params.status)
+    const qs = q.toString() ? `?${q.toString()}` : ''
+    return request<PaginatedResponse<BoardWarning> | BoardWarning[]>(`/board/warnings/${qs}`)
+  },
+
+  async issueWarning(data: {
+    target_user_id?: number | null
+    target_group_id?: number | null
+    related_task_id?: number | null
+    reason: string
+    expiry_date?: string | null
+  }): Promise<BoardWarning> {
+    return request<BoardWarning>('/board/warnings/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async acknowledgeWarning(id: number): Promise<BoardWarning> {
+    return request<BoardWarning>(`/board/warnings/${id}/acknowledge/`, {
+      method: 'POST'
+    })
+  },
+
+  async resolveWarning(id: number): Promise<BoardWarning> {
+    return request<BoardWarning>(`/board/warnings/${id}/resolve/`, {
+      method: 'POST'
+    })
+  },
+
+  async reviseDeadline(id: number, revised_deadline: string): Promise<BoardWarning> {
+    return request<BoardWarning>(`/board/warnings/${id}/revise_deadline/`, {
+      method: 'POST',
+      body: JSON.stringify({ revised_deadline })
+    })
+  },
+
+  async getAuditLogs(): Promise<WarningAuditLog[]> {
+    return request<WarningAuditLog[]>('/board/warnings/audit_logs/')
+  },
+
+  async getRemovalReviews(params?: { status?: string }): Promise<PaginatedResponse<RemovalReview> | RemovalReview[]> {
+    const q = new URLSearchParams()
+    if (params?.status) q.append('status', params.status)
+    const qs = q.toString() ? `?${q.toString()}` : ''
+    return request<PaginatedResponse<RemovalReview> | RemovalReview[]>(`/board/removals/${qs}`)
+  },
+
+  async flagForRemoval(data: {
+    target_user_id?: number | null
+    target_group_id?: number | null
+    reason: string
+  }): Promise<RemovalReview> {
+    return request<RemovalReview>('/board/removals/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  async resolveRemoval(
+    id: number,
+    data: { decision: 'Approved_Deactivated' | 'Rejected'; official_notes?: string }
+  ): Promise<RemovalReview> {
+    return request<RemovalReview>(`/board/removals/${id}/resolve/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  }
+}
+
+// ----------------------------------------------------
+// Global Search API
+// ----------------------------------------------------
+export const searchApi = {
+  async search(query: string): Promise<SearchResults> {
+    const q = encodeURIComponent(query.trim())
+    return request<SearchResults>(`/search/?q=${q}`)
+  }
+}
+
+// ----------------------------------------------------
+// Live ETA API
+// ----------------------------------------------------
+export const liveEtaApi = {
+  async getLiveEta(): Promise<LiveEtaResponse> {
+    return request<LiveEtaResponse>('/tasks/live-eta/')
+  }
+}
+
+
 
 
 

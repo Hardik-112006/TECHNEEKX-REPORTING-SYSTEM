@@ -97,22 +97,91 @@ class TeamViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+from apps.accounts.permissions import (
+    IsOfficialTeam,
+    IsCoreTeamOrAbove,
+    is_official,
+    is_board,
+    is_core_team
+)
+
 class GroupViewSet(viewsets.ModelViewSet):
     """
     CRUD for Groups within Teams.
+    Creation, update, and deletion strictly restricted to Official Team (Founder, Chairman, MD, President, CTO, Official).
+    Read access: All authenticated users within their permitted scope.
     """
-    queryset = Group.objects.select_related('team').all().order_by('group_id')
+    queryset = Group.objects.select_related('team').prefetch_related('group_members').all().order_by('group_id')
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [IsCoreLeadOrAbove()]
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'assign_member', 'remove_member']:
+            return [IsOfficialTeam()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
+        user = self.request.user
         queryset = super().get_queryset()
+
         team_id = self.request.query_params.get('team_id')
         if team_id:
             queryset = queryset.filter(team_id=team_id)
+
+        # Core team members see their assigned group
+        if not (is_official(user) or is_board(user)) and user.group_id:
+            queryset = queryset.filter(group_id=user.group_id)
+
         return queryset
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        group = self.get_object()
+        members = group.group_members.all()
+        serializer = UserSummarySerializer(members, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsOfficialTeam])
+    def assign_member(self, request, pk=None):
+        group = self.get_object()
+        serializer = MemberActionSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data['user_id']
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            user.group = group
+            if not user.team_id:
+                user.team = group.team
+            user.save(update_fields=['group', 'team'])
+            return Response({
+                'message': f"User '{user.name}' assigned to group '{group.name}'.",
+                'group_id': group.group_id,
+                'user_id': user.user_id
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsOfficialTeam])
+    def remove_member(self, request, pk=None):
+        group = self.get_object()
+        serializer = MemberActionSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data['user_id']
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            if user.group_id != group.group_id:
+                return Response({'error': f"User '{user.name}' is not in group '{group.name}'."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.group = None
+            user.save(update_fields=['group'])
+            return Response({
+                'message': f"User '{user.name}' removed from group '{group.name}'.",
+                'group_id': group.group_id,
+                'user_id': user.user_id
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -17,7 +17,7 @@ class EducationSerializer(serializers.ModelSerializer):
         ]
 
     def validate_graduation_year(self, value):
-        if value < 1970 or value > 2040:
+        if value is not None and (value < 1970 or value > 2040):
             raise serializers.ValidationError("Please provide a valid graduation year.")
         return value
 

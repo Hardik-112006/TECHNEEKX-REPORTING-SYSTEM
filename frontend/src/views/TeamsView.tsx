@@ -357,47 +357,27 @@ export const TeamsView: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Sub-Teams and Groups (if present) */}
-              {(selectedTeam.sub_teams?.length > 0 || selectedTeam.groups?.length > 0) && (
+              {/* Sub-Teams (if present) */}
+              {selectedTeam.sub_teams?.length > 0 && (
                 <div className="sub-units-grid">
-                  {selectedTeam.sub_teams?.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <div className="header-with-icon">
-                          <FolderTree size={16} className="text-primary" />
-                          <CardTitle>Nested Sub-Teams</CardTitle>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="sub-units-list">
-                          {selectedTeam.sub_teams.map((st) => (
-                            <li key={st.team_id} className="sub-unit-item">
-                              <span>{st.name}</span>
-                              <Badge size="sm">{st.member_count} members</Badge>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {selectedTeam.groups?.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Specialized Working Groups</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="sub-units-list">
-                          {selectedTeam.groups.map((grp) => (
-                            <li key={grp.group_id} className="sub-unit-item">
-                              <span>{grp.name}</span>
-                              <span className="text-muted text-xs">{grp.description}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
+                  <Card>
+                    <CardHeader>
+                      <div className="header-with-icon">
+                        <FolderTree size={16} className="text-primary" />
+                        <CardTitle>Nested Sub-Teams</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="sub-units-list">
+                        {selectedTeam.sub_teams.map((st) => (
+                          <li key={st.team_id} className="sub-unit-item">
+                            <span>{st.name}</span>
+                            <Badge size="sm">{st.member_count} members</Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </div>

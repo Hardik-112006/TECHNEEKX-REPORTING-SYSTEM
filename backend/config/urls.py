@@ -29,4 +29,13 @@ urlpatterns = [
     path('api/notifications/', include('apps.notifications.urls')),
     # Multi-Level Approval Workflows API
     path('api/approvals/', include('apps.approvals.urls')),
+    # Board Monitoring, Warnings & Removal Governance API
+    path('api/board/', include('apps.board.urls')),
 ]
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

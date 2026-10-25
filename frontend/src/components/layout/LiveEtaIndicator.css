@@ -1,0 +1,340 @@
+.live-eta-container {
+  position: relative;
+  display: inline-block;
+}
+
+.live-eta-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-main);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.live-eta-trigger:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-primary-border);
+}
+
+.live-eta-trigger.is-active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-ring);
+}
+
+.eta-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eta-status-dot.dot-normal {
+  background-color: var(--color-success);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+}
+
+.eta-status-dot.dot-warning {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.2);
+}
+
+.eta-status-dot.dot-critical {
+  background-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.2);
+  animation: etaPulse 1.5s infinite;
+}
+
+.eta-status-dot.dot-unavailable {
+  background-color: var(--color-text-muted);
+}
+
+@keyframes etaPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.eta-trigger-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.eta-label {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.eta-value {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.live-eta-trigger.is-active .eta-value {
+  color: var(--color-primary);
+}
+
+/* Dropdown Card */
+.live-eta-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  overflow: hidden;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.eta-dropdown-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-surface-hover);
+}
+
+.eta-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.eta-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eta-refresh-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.eta-refresh-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary-border);
+}
+
+.eta-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.eta-dropdown-body {
+  padding: 16px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.eta-loading-state,
+.eta-error-state,
+.eta-empty-state {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.eta-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.eta-empty-icon {
+  color: var(--color-text-muted);
+}
+
+.eta-empty-text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.eta-active-card {
+  background-color: var(--color-primary-light);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.eta-active-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.eta-context-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-primary);
+}
+
+.eta-active-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.eta-active-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.eta-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eta-meta-highlight {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.eta-meta-highlight.is-overdue {
+  color: var(--color-danger);
+}
+
+.eta-action-row {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.eta-nav-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.eta-nav-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Upcoming Deliverables List */
+.eta-upcoming-section {
+  margin-top: 14px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.eta-upcoming-heading {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.eta-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eta-upcoming-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: var(--color-surface-hover);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+.eta-upcoming-item-title {
+  font-weight: 500;
+  color: var(--color-text-main);
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eta-upcoming-item-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.eta-dropdown-footer {
+  padding: 10px 16px;
+  background-color: var(--color-surface-hover);
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (max-width: 639px) {
+  .live-eta-dropdown {
+    width: 290px;
+    right: -60px;
+  }
+  .eta-label {
+    display: none;
+  }
+}

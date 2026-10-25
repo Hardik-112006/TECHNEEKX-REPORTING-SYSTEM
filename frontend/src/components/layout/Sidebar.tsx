@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   LayoutDashboard,
   CheckSquare,
@@ -7,36 +7,33 @@ import {
   Users,
   Megaphone,
   Activity,
-  LogOut,
   X,
-  Layers,
-  Briefcase,
   Award,
   FileText,
   TrendingUp,
   ShieldCheck
-} from 'lucide-react';
-import { Badge } from '../ui/Badge';
-import './Sidebar.css';
+} from 'lucide-react'
+import './Sidebar.css'
 
 export interface NavItem {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  badge?: string | number;
+  id: string
+  label: string
+  icon: React.ReactNode
+  badge?: string | number
+  group?: 'main' | 'growth' | 'governance'
 }
 
 export interface SidebarProps {
-  activeNav: string;
-  onNavigate: (navId: string) => void;
-  isOpen: boolean;
-  onCloseMobile: () => void;
+  activeNav: string
+  onNavigate: (navId: string) => void
+  isOpen: boolean
+  onCloseMobile: () => void
   user?: {
-    name: string;
-    email: string;
-    role: string;
-  };
-  onLogout?: () => void;
+    name: string
+    email: string
+    role: string
+  }
+  onLogout?: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -44,23 +41,100 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   isOpen,
   onCloseMobile,
-  user = { name: 'Demo Official', email: 'official@example.com', role: 'Official' },
-  onLogout
+  user = { name: 'Demo Official', email: 'official@example.com', role: 'Official' }
 }) => {
-  const navItems: NavItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-    { id: 'tasks', label: 'Tasks', icon: <CheckSquare size={18} />, badge: '3' },
-    { id: 'submissions', label: 'Submissions', icon: <UploadCloud size={18} /> },
-    { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={18} /> },
-    { id: 'career', label: 'Career & Resume', icon: <Briefcase size={18} /> },
-    { id: 'hackathons', label: 'Hackathons & Recruitment', icon: <Award size={18} /> },
-    { id: 'documents', label: 'Official Documents', icon: <FileText size={18} /> },
-    { id: 'analytics', label: 'Analytics & Reports', icon: <TrendingUp size={18} /> },
-    { id: 'approvals', label: 'Governance Approvals', icon: <ShieldCheck size={18} /> },
-    { id: 'teams', label: 'Teams & Groups', icon: <Users size={18} /> },
-    { id: 'announcements', label: 'Announcements', icon: <Megaphone size={18} /> },
-    { id: 'activity', label: 'Activity Logs', icon: <Activity size={18} /> },
-  ];
+  const role = user.role || 'Member'
+  const isOfficial = ['Founder', 'Chairman', 'Managing Director', 'President', 'Official'].includes(role)
+  const isBoard = ['Director of Core Operations'].includes(role)
+  const isCoreTeam = ['Core Team Lead', 'Core Lead'].includes(role)
+
+  // Primary Navigation
+  const mainNavItems: NavItem[] = [
+    {
+      id: 'dashboard',
+      label: isOfficial ? 'Executive Dashboard' : isBoard ? 'Board Monitoring' : isCoreTeam ? 'Group Dashboard' : 'My Workspace',
+      icon: <LayoutDashboard size={18} />,
+      group: 'main'
+    },
+    {
+      id: 'tasks',
+      label: isOfficial ? 'Tasks & Delegation' : isBoard ? 'Monitored Tasks' : isCoreTeam ? 'Group Tasks' : 'My Tasks',
+      icon: <CheckSquare size={18} />,
+      group: 'main'
+    },
+    {
+      id: 'submissions',
+      label: (isOfficial || isCoreTeam) ? 'Submissions Review' : isBoard ? 'Submissions Log' : 'My Submissions',
+      icon: <UploadCloud size={18} />,
+      group: 'main'
+    },
+    ...(isOfficial || isCoreTeam ? [
+      {
+        id: 'teams',
+        label: isOfficial ? 'Teams & Groups' : 'My Group Roster',
+        icon: <Users size={18} />,
+        group: 'main' as const
+      }
+    ] : []),
+    {
+      id: 'announcements',
+      label: 'Announcements',
+      icon: <Megaphone size={18} />,
+      group: 'main'
+    }
+  ]
+
+  // Community & Growth Navigation
+  const growthNavItems: NavItem[] = [
+    {
+      id: 'leaderboard',
+      label: 'Community Leaderboard',
+      icon: <Trophy size={18} />,
+      group: 'growth'
+    },
+    {
+      id: 'hackathons',
+      label: 'Hackathons & Recruitment',
+      icon: <Award size={18} />,
+      group: 'growth'
+    }
+  ]
+
+  // Governance & Administration Navigation
+  const governanceNavItems: NavItem[] = [
+    ...(isOfficial ? [
+      { id: 'approvals', label: 'Governance Approvals', icon: <ShieldCheck size={18} />, group: 'governance' as const },
+      { id: 'documents', label: 'Official Documents', icon: <FileText size={18} />, group: 'governance' as const }
+    ] : []),
+    ...(isOfficial || isBoard ? [
+      { id: 'analytics', label: isOfficial ? 'Analytics & Reports' : 'Compliance Reports', icon: <TrendingUp size={18} />, group: 'governance' as const },
+      { id: 'activity', label: 'Audit History', icon: <Activity size={18} />, group: 'governance' as const }
+    ] : [])
+  ]
+
+  const renderNavList = (items: NavItem[]) => (
+    <ul className="nav-list">
+      {items.map((item) => {
+        const isActive = activeNav === item.id
+        return (
+          <li key={item.id} className="nav-item">
+            <button
+              type="button"
+              className={`nav-button ${isActive ? 'nav-button-active' : ''}`}
+              onClick={() => {
+                onNavigate(item.id)
+                onCloseMobile()
+              }}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+              {item.badge && <span className="nav-badge-pill">{item.badge}</span>}
+            </button>
+          </li>
+        )
+      })}
+    </ul>
+  )
 
   return (
     <>
@@ -77,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand header */}
         <div className="sidebar-brand">
           <div className="brand-logo-wrapper">
-            <Layers className="brand-logo-icon" size={20} />
+            <img src="/tnxlogo.jpg" alt="TechNeekX Logo" className="brand-logo-img" />
           </div>
           <div className="brand-text-block">
             <h1 className="brand-title">TechNeekX</h1>
@@ -93,60 +167,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Navigation items */}
+        {/* Navigation sections */}
         <nav className="sidebar-nav">
-          <div className="nav-group-title">MAIN MENU</div>
-          <ul className="nav-list">
-            {navItems.map((item) => {
-              const isActive = activeNav === item.id;
-              return (
-                <li key={item.id} className="nav-item">
-                  <button
-                    type="button"
-                    className={`nav-button ${isActive ? 'nav-button-active' : ''}`}
-                    onClick={() => {
-                      onNavigate(item.id);
-                      onCloseMobile();
-                    }}
-                  >
-                    <span className="nav-icon">{item.icon}</span>
-                    <span className="nav-label">{item.label}</span>
-                    {item.badge && (
-                      <span className="nav-badge-pill">{item.badge}</span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        {/* User Profile Card & Logout */}
-        <div className="sidebar-footer">
-          <div className="user-profile-card">
-            <div className="user-avatar">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="user-info-text">
-              <span className="user-name">{user.name}</span>
-              <Badge variant="primary" size="sm" className="user-role-badge">
-                {user.role}
-              </Badge>
-            </div>
+          <div className="nav-section-block">
+            <div className="nav-group-title">WORKSPACE</div>
+            {renderNavList(mainNavItems)}
           </div>
-          {onLogout && (
-            <button
-              type="button"
-              className="sidebar-logout-btn"
-              onClick={onLogout}
-              title="Sign Out"
-              aria-label="Sign Out"
-            >
-              <LogOut size={16} />
-            </button>
+
+          {growthNavItems.length > 0 && (
+            <div className="nav-section-block">
+              <div className="nav-group-title">COMMUNITY & GROWTH</div>
+              {renderNavList(growthNavItems)}
+            </div>
           )}
-        </div>
+
+          {governanceNavItems.length > 0 && (
+            <div className="nav-section-block">
+              <div className="nav-group-title">GOVERNANCE & AUDIT</div>
+              {renderNavList(governanceNavItems)}
+            </div>
+          )}
+        </nav>
       </aside>
     </>
-  );
-};
+  )
+}

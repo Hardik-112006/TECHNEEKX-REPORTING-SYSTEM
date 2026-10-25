@@ -10,7 +10,15 @@ interface AuthContextType {
   isLoading: boolean
   error: string | null
   login: (credentials: { email: string; password: string }) => Promise<void>
-  register: (data: { name: string; email: string; password: string }) => Promise<void>
+  register: (data: {
+    name: string
+    email: string
+    password: string
+    category?: string
+    position?: string
+    requested_role?: string
+    group_id?: number | null
+  }) => Promise<{ requiresApproval: boolean; message: string }>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
   switchDemoUser: (email: string) => Promise<void>
@@ -70,13 +78,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  const register = async (data: { name: string; email: string; password: string }) => {
+  const register = async (data: {
+    name: string
+    email: string
+    password: string
+    category?: string
+    position?: string
+    requested_role?: string
+    group_id?: number | null
+    auth_key?: string
+  }): Promise<{ requiresApproval: boolean; message: string }> => {
     setIsLoading(true)
     setError(null)
     try {
-      await authApi.register(data)
-      // Auto-login after registration
+      const res = await authApi.register(data)
+      const isPending = res.user?.status === 'Pending'
+      if (isPending) {
+        return {
+          requiresApproval: true,
+          message: res.message || 'Account registered and pending administrator approval. An authorized Official must verify your role before sign-in.'
+        }
+      }
+      // Auto-login after active registration
       await login({ email: data.email, password: data.password })
+      return {
+        requiresApproval: false,
+        message: 'Account registered successfully!'
+      }
     } catch (err: any) {
       setError(err?.message || 'Registration failed')
       throw err

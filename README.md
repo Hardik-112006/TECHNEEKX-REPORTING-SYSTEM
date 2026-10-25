@@ -111,57 +111,59 @@ Copy-Item .env.example .env
 
 ---
 
-## 🗄️ PostgreSQL Setup & Migration Sequence
+## 🗄️ Database Architecture & Demo Persistence (Phase 11)
 
-### 1. Database Creation
-In PostgreSQL (pgAdmin or `psql`):
-```sql
-CREATE DATABASE techneekx_db;
-```
+The system supports **dual database backends**:
+1. **Lightweight Local SQLite (Default for Demo & Local Dev)**:
+   - Configured via `USE_SQLITE=True` in `.env` (or environment variable).
+   - Zero PostgreSQL installation blocker for evaluation and local testing.
+   - Stores all accounts, tasks, groups, warnings, and announcements in persistent `backend/db.sqlite3`.
+   - Data survives application restarts.
+2. **Production-Ready PostgreSQL**:
+   - Set `USE_SQLITE=False` in `.env` and specify `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`.
+   - All migrations, models, JSON fields, and transactions are 100% compatible with both SQLite and PostgreSQL.
 
-### 2. Apply Reviewed Schema & Seed Data
-Execute the approved baseline SQL file:
+### Initialize or Reset the Demo Database
+Run the idempotent seed command to populate all 4 hierarchy levels, groups, sample tasks (including same-day and overdue), proofs, reviews, warnings, and announcements:
+
 ```powershell
-psql -U postgres -d techneekx_db -f database/techneekx_reporting_schema_seed.sql
-```
+# Populate demo database idempotently (safe to run multiple times)
+python backend\manage.py seed_demo_data
 
-### 3. Synchronize Django Migrations
-Establish Django ORM synchronization using fake-initial baselines:
-```powershell
-python backend\manage.py migrate --fake-initial
-```
-
-### 4. Initialize Seed Passwords
-Hash placeholder seed passwords to activate the demo accounts (`Techneekx@2026`):
-```powershell
-python backend\manage.py seed_passwords --password Techneekx@2026
+# Safely reset development demo database from scratch (when explicitly requested)
+python backend\manage.py seed_demo_data --reset
 ```
 
 ---
 
 ## 🚀 Running the System Locally
 
-### Backend (Django)
+### Backend (Django REST Framework)
 ```powershell
-# 1. Install dependencies
-pip install -r backend\requirements.txt
+# 1. Activate Python virtual environment
+.\.venv\Scripts\Activate.ps1
 
-# 2. Run system checks
-python backend\manage.py check
+# 2. Run database migrations
+python backend\manage.py migrate
 
-# 3. Start development server
+# 3. Seed demo data (if not already seeded)
+python backend\manage.py seed_demo_data
+
+# 4. Start backend server (listening on http://127.0.0.1:8000)
 python backend\manage.py runserver 127.0.0.1:8000
 ```
 
-### Frontend (Vite + React)
+### Frontend (React 19 + TypeScript + Vite)
 ```powershell
-# 1. Install dependencies
+# 1. Install frontend dependencies
 npm --prefix frontend install
 
-# 2. Start development server
+# 2. Start Vite dev server (listening on http://127.0.0.1:5173)
 npm --prefix frontend run dev
 ```
+
 Open `http://localhost:5173/` in your browser.
+Use the discreet **Persona Switcher** dropdown in the top header or the login tiles to test any role across the 4 hierarchy levels!
 
 ---
 
@@ -192,120 +194,48 @@ npm --prefix frontend run build
 
 ---
 
-## 🛡️ Role-Based Access Control (RBAC) Matrix
+## 🛡️ Official TechNeekX 4-Level Hierarchy & Permissions
 
-| Tier | Role Title(s) | Platform Scope & Capabilities |
-| :---: | :--- | :--- |
-| **Tier 1** | `Founder`, `Chairman`, `Managing Director` | Full organization oversight, team creation, user role management, org-wide reviews, task allocation. |
-| **Tier 2** | `President`, `CTO`, `Director of Core Operations`, `Official` | Operational oversight, task allocation, reviews across all teams, team editing. |
-| **Tier 3** | `Mentor`, `Core Team Lead` | Task allocation for assigned teams, team member add/remove, submission reviews for team members. |
-| **Tier 4** | `Deputy`, `Group Leader` | Conduct submission reviews, manage assigned sub-group activities. |
-| **Tier 5** | `Member` *(Default registration role)* | View assigned tasks, mark tasks In Progress, submit deliverable evidence, view reviewer feedback. |
+| Level | Category | Roles | Scope & Responsibilities |
+| :---: | :--- | :--- | :--- |
+| **Level 1** | **Official Team** | `Founder`, `Chairman`, `Managing Director`, `President`, `CTO`, `Official` | Highest administrative authority. Organization-wide visibility, group creation & deletion, user role assignment, downward task creation & delegation, official announcements publishing. |
+| **Level 2** | **Board** | `Director of Core Operations`, `Mentor` | Independent reporting monitor. Inspects overdue/missing reports across groups, issues compliance warnings (max 5 active), flags members for removal review. Does not delete groups or create arbitrary official tasks. |
+| **Level 3** | **Core Team** | `Core Team Lead`, `Core Lead`, `Deputy` | Operational group leads. Associated with specific working groups. Receives parent tasks, delegates subtasks downward to group members, reviews deliverables, and reports group progress upward. |
+| **Level 4** | **Members** | `Member` (TechNeekX Family 🎀) | Executes assigned tasks, submits GitHub pull requests and proof screenshots, views reviewer feedback, tracks personal points and leaderboard rank. |
 
 ---
 
-## 🔄 State Machine Workflow & Idempotent Scoring
+## 🔄 Task Delegation & Upward Reporting Workflow
 
 ```mermaid
-stateDiagram-v2
-    [*] --> Assigned: Task allocated by Lead/Official
-    Assigned --> InProgress: Member clicks "Start Task"
-    InProgress --> Submitted: Member uploads evidence (GitHub/Screenshots)
-    Submitted --> Approved: Official Reviewer approves (+10 pts awarded)
-    Submitted --> ChangesRequested: Reviewer requests changes (mandatory feedback)
-    ChangesRequested --> InProgress: Member restarts task
-    ChangesRequested --> Submitted: Member resubmits corrected proof
-    Approved --> [*]: Completed
+flowchart TD
+    subgraph Downward Delegation
+        F[Founder / Official Team] -->|Directives & Tasks| CL[Core Lead / Deputy]
+        CL -->|Delegated Subtasks| M[Group Members]
+    end
+
+    subgraph Upward Reporting
+        M -->|1. Evidence Submitted| CL
+        CL -->|2. Peer Review & Feedback| B[Director of Core Ops / Board]
+        B -->|3. Progress & Warnings Escalated| OFF[Authorized Officials]
+        OFF -->|4. Organization Status Overview| FND[Founder]
+    end
 ```
 
-### Invariant Rules
-1. **Submitter Point Allocation**: Exactly 10 points are awarded to the submitter upon `Approved` decision.
-2. **Anti-Self-Review Guard**: If `submitter_id == reviewer_id` or `assigned_to_id == reviewer_id`, the review request is rejected with `HTTP 403 Forbidden`.
-3. **Idempotency Guard**: Once a task status is `Approved`, subsequent review attempts are rejected with `HTTP 400 Bad Request`, guaranteeing zero duplicate points.
-4. **Resubmission Preservation**: Multiple proofs for the same task are preserved in chronological order. Reviewers inspect full version history before making a decision.
-
 ---
 
-## 📡 API Endpoint Summary & Sample Payloads
-
-### Authentication
-- `POST /api/auth/login/`
-  ```json
-  { "email": "founder@example.com", "password": "Techneekx@2026" }
-  ```
-- `POST /api/auth/register/`
-  ```json
-  { "name": "Jane Doe", "email": "jane@example.com", "password": "SecurePassword123" }
-  ```
-- `POST /api/auth/refresh/`
-  ```json
-  { "refresh": "eyJhbGciOiJIUzI1NiIsIn..." }
-  ```
-
-### Tasks & Workflow
-- `POST /api/tasks/` (Leads/Officials only)
-  ```json
-  {
-    "title": "Implement REST API Documentation",
-    "description": "Generate OpenAPI specs and Postman collection",
-    "deadline": "2026-11-15T18:00:00Z",
-    "assigned_to_id": 5,
-    "priority": "High"
-  }
-  ```
-- `POST /api/tasks/1/start/` (Assigned member only)
-- `POST /api/tasks/1/submit/` (Assigned member only)
-  ```json
-  {
-    "github_link": "https://github.com/techneekx/repo/pull/12",
-    "screenshots": "https://imgur.com/evidence.png",
-    "description": "Completed OpenAPI documentation with automated tests."
-  }
-  ```
-- `POST /api/tasks/1/review/` (Leads/Officials; self-review forbidden)
-  ```json
-  {
-    "decision": "Approved",
-    "feedback": "Acceptance criteria met. Approved!"
-  }
-  ```
-
----
-
-## 🔐 Security Review & Production Deployment Notes
-
-1. **Secret Zero Protection**:
-   - No credentials, API tokens, or `.env` files committed.
-   - Production deployments must set `DEBUG=False` and supply a strong random `SECRET_KEY`.
-2. **Server-Side Authorization**:
-   - Permissions are enforced on the backend at the view and service layer. Client-side role checks serve only to improve user experience.
-3. **Input Sanitization & Injection Defense**:
-   - Django ORM parameterizes all SQL queries, preventing SQL injection.
-   - Proof URLs are validated via regex matching `https?://` schemes.
-4. **HTTPS & Cookie Security**:
-   - In production, set `SESSION_COOKIE_SECURE = True`, `CSRF_COOKIE_SECURE = True`, and `SECURE_SSL_REDIRECT = True`.
-5. **CORS Hardening**:
-   - Whitelist only verified production domains in `CORS_ALLOWED_ORIGINS`.
-
----
-
-## 🗺️ Known Limitations & Post-MVP Roadmap
-
-- **Direct File Storage**: The MVP accepts verified external URLs (GitHub, Imgur, cloud storage). Post-MVP will introduce direct S3/MinIO bucket upload for binary assets.
-- **Real-Time WebSockets**: Live leaderboard and announcements currently poll on navigation and refresh. Post-MVP roadmap includes Django Channels WebSocket streaming.
-- **Email Notifications**: Task assignments trigger activity log entries; email dispatch via SendGrid/SES is slated for Phase 8.
-
----
-
-## 👥 Seed User Credentials for Evaluation
+## 👥 Seed Demo Personas for Evaluation
 
 All demo accounts use the standard demo password: `Techneekx@2026`
 
-| Email | Name | Role | Tier | Primary Role Capabilities |
-| :--- | :--- | :--- | :---: | :--- |
-| `founder@example.com` | Demo Founder | Founder | 1 | Platform oversight, team creation, user management |
-| `official@example.com` | Demo Official | Official | 2 | Organization review queue, team allocation |
-| `aarav.lead@example.com` | Aarav Lead | Core Team Lead | 3 | Create tasks, manage roster, review team submissions |
-| `meera.leader@example.com` | Meera Leader | Group Leader | 4 | Review deliverables, manage working group |
-| `riya.member@example.com` | Riya Member | Member | 5 | Execute tasks, upload proofs, earn points |
-| `kabir.member@example.com` | Kabir Member | Member | 5 | Execute tasks, upload proofs, track rank |
+| Hierarchy Level | Category | Email | Name | Role Title | Key Capabilities |
+| :---: | :--- | :--- | :--- | :--- | :--- |
+| **Level 1** | Official Team | `founder@example.com` | Demo Founder | Founder | Organization-wide administration, group governance, user management |
+| **Level 1** | Official Team | `cto@example.com` | Marcus CTO | CTO | Technical task directives, downward task delegation |
+| **Level 1** | Official Team | `official@example.com` | Demo Official | Official | Organization reviews, cross-group auditing |
+| **Level 2** | Board | `director.ops@example.com` | Anita Director | Director of Core Operations | Daily reporting monitoring, issue warnings (max 5 active), flag removal |
+| **Level 2** | Board | `mentor.riya@example.com` | Riya Mentor | Mentor | Technical mentorship, review compliance tracking |
+| **Level 3** | Core Team | `corelead.vikram@example.com` | Vikram Core Lead | Core Team Lead | Manage AI Group, delegate subtasks to Dev & Kavya, review work |
+| **Level 3** | Core Team | `deputy.rohit@example.com` | Rohit Deputy | Deputy | Assist AI/Web groups, monitor group deadlines |
+| **Level 4** | Members | `member.dev@example.com` | Dev Member | Member | AI Group member: view tasks, submit GitHub links & proof |
+| **Level 4** | Members | `member.kavya@example.com` | Kavya Member | Member | AI Group member: submit deliverables, track leaderboard points |

@@ -290,17 +290,25 @@ class TasksAndWorkflowTests(APITestCase):
         top_user_ids = [entry['user']['user_id'] for entry in lb_res.data['results']]
         self.assertIn(self.member1.user_id, top_user_ids)
 
-    # 7. Announcements CRUD & Permissions
+    # 7. Announcements CRUD & Permissions (Level 1 Official Team only)
     def test_announcements_permissions(self):
-        # Lead posts announcement
-        self.client.force_authenticate(user=self.lead)
+        # Official Team posts announcement
+        self.client.force_authenticate(user=self.founder)
         ann_res = self.client.post('/api/announcements/', {
             'title': 'Sprint Review on Friday',
             'content': 'Please ensure all proofs are submitted by Thursday 5 PM.'
         })
         self.assertEqual(ann_res.status_code, status.HTTP_201_CREATED)
 
-        # Member cannot post announcement
+        # Core Lead cannot post official announcement by default (Level 3)
+        self.client.force_authenticate(user=self.lead)
+        lead_ann = self.client.post('/api/announcements/', {
+            'title': 'Lead Announcement Attempt',
+            'content': 'Should be rejected for non-Official roles'
+        })
+        self.assertEqual(lead_ann.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Member cannot post announcement (Level 4)
         self.client.force_authenticate(user=self.member1)
         bad_ann = self.client.post('/api/announcements/', {
             'title': 'Member Announcement',
@@ -314,8 +322,8 @@ class TasksAndWorkflowTests(APITestCase):
 
     # 8. Activity Log Recording
     def test_activity_logging(self):
-        self.client.force_authenticate(user=self.lead)
-        # Perform action: post an announcement
+        self.client.force_authenticate(user=self.founder)
+        # Perform action: post an announcement as Official Team
         self.client.post('/api/announcements/', {
             'title': 'Test Activity Log Trigger',
             'content': 'This will log ANNOUNCEMENT_POSTED.'

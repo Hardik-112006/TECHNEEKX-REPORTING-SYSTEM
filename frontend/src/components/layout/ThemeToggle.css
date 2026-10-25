@@ -1,0 +1,38 @@
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-primary-bright);
+  border-color: var(--color-primary-border);
+  box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
+}
+
+.theme-toggle-icon {
+  transition: transform var(--transition-fast);
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon {
+  transform: rotate(15deg);
+}
+
+.sun-icon {
+  color: #FBBF24;
+}
+
+.moon-icon {
+  color: #818CF8;
+}

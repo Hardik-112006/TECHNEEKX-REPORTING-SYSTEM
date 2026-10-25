@@ -1,25 +1,34 @@
-import React from 'react';
-import { Menu, Search, ShieldCheck } from 'lucide-react';
-import { Badge } from '../ui/Badge';
-import { NotificationCenter } from '../notifications/NotificationCenter';
-import './TopBar.css';
+import React from 'react'
+import { Menu } from 'lucide-react'
+import { GlobalSearch } from './GlobalSearch'
+import { LiveEtaIndicator } from './LiveEtaIndicator'
+import { ThemeToggle } from './ThemeToggle'
+import { UserProfileMenu } from './UserProfileMenu'
+import './TopBar.css'
 
 export interface TopBarProps {
-  onToggleMobileMenu: () => void;
-  title: string;
-  subtitle?: string;
-  userRole?: string;
-  onSearchChange?: (val: string) => void;
-  searchValue?: string;
+  onToggleMobileMenu: () => void
+  title: string
+  subtitle?: string
+  user?: {
+    name: string
+    email: string
+    role: string
+    hierarchyLevel?: string
+    position?: string | null
+    groupName?: string | null
+  }
+  onRoleSwitch?: (email: string) => void
+  onLogout?: () => void
+  onNavigate?: (navId: string) => void
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   onToggleMobileMenu,
-  title,
-  subtitle,
-  userRole = 'Official',
-  onSearchChange,
-  searchValue = ''
+  user = { name: 'Community Member', email: '', role: 'Member' },
+  onRoleSwitch,
+  onLogout,
+  onNavigate
 }) => {
   return (
     <header className="app-topbar">
@@ -32,39 +41,42 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <Menu size={20} />
         </button>
-
-        <div className="topbar-title-block">
-          <h2 className="topbar-title">{title}</h2>
-          {subtitle && <p className="topbar-subtitle">{subtitle}</p>}
+        <div
+          className="topbar-brand-mark"
+          onClick={() => onNavigate?.('dashboard')}
+          title="TechNeekX Reporting System"
+          role="button"
+          tabIndex={0}
+        >
+          <img src="/tnxlogo.jpg" alt="TechNeekX Logo" className="topbar-logo-img" />
+          <span className="topbar-brand-text">TechNeekX</span>
         </div>
       </div>
 
       <div className="topbar-right">
-        {onSearchChange && (
-          <div className="topbar-search-box">
-            <Search size={16} className="search-box-icon" />
-            <input
-              type="text"
-              placeholder="Search tasks, teams, members..."
-              value={searchValue}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="search-box-input"
-            />
-          </div>
-        )}
+        {/* Real authorized global search */}
+        <GlobalSearch onNavigate={onNavigate} />
 
-        <div className="topbar-actions">
-          <NotificationCenter />
+        {/* Live ETA indicator replacing notification bell */}
+        <LiveEtaIndicator onNavigate={onNavigate} />
 
-          <div className="topbar-role-badge">
-            <ShieldCheck size={14} className="role-icon" />
-            <span>Role:</span>
-            <Badge variant="primary" size="sm">
-              {userRole}
-            </Badge>
-          </div>
-        </div>
+        {/* Working Light/Dark theme toggle */}
+        <ThemeToggle />
+
+        {/* Clean authenticated user profile menu (no redundant header persona dropdown) */}
+        <UserProfileMenu
+          name={user.name}
+          email={user.email}
+          role={user.role}
+          hierarchyLevel={user.hierarchyLevel}
+          position={user.position}
+          groupName={user.groupName}
+          onLogout={onLogout}
+          onRoleSwitch={onRoleSwitch}
+          onNavigate={onNavigate}
+        />
       </div>
     </header>
-  );
-};
+  )
+}
+

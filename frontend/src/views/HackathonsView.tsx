@@ -463,7 +463,7 @@ export const HackathonsView: React.FC = () => {
                             href={cert.certificate_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: '#635BFF', fontWeight: 600, textDecoration: 'none' }}
+                            style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}
                           >
                             View Document ↗
                           </a>
@@ -590,7 +590,7 @@ export const HackathonsView: React.FC = () => {
                           <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>{r.participant_email}</div>
                         </TableCell>
                         <TableCell>{r.team_name || 'Individual'}</TableCell>
-                        <TableCell><strong style={{ color: '#635BFF' }}>{r.hackathon_points} pts</strong></TableCell>
+                        <TableCell><strong style={{ color: 'var(--color-primary)' }}>{r.hackathon_points} pts</strong></TableCell>
                         <TableCell>{r.tie_break_score}</TableCell>
                         <TableCell><Badge variant="success">Verified</Badge></TableCell>
                       </TableRow>
@@ -632,12 +632,12 @@ export const HackathonsView: React.FC = () => {
                         <TableCell>{t.project_title || 'In Development'}</TableCell>
                         <TableCell>
                           {t.project_repo && (
-                            <a href={t.project_repo} target="_blank" rel="noopener noreferrer" style={{ color: '#635BFF', marginRight: '0.75rem', fontWeight: 600 }}>
+                            <a href={t.project_repo} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', marginRight: '0.75rem', fontWeight: 600 }}>
                               Repo ↗
                             </a>
                           )}
                           {t.project_demo && (
-                            <a href={t.project_demo} target="_blank" rel="noopener noreferrer" style={{ color: '#635BFF', fontWeight: 600 }}>
+                            <a href={t.project_demo} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', fontWeight: 600 }}>
                               Demo ↗
                             </a>
                           )}
@@ -674,7 +674,7 @@ export const HackathonsView: React.FC = () => {
                 <span className="stat-label">Accepted Offers</span>
               </div>
               <div className="analytics-stat-card">
-                <span className="stat-num" style={{ color: '#635BFF' }}>{analytics.conversion_rate_percent}%</span>
+                <span className="stat-num" style={{ color: 'var(--color-primary)' }}>{analytics.conversion_rate_percent}%</span>
                 <span className="stat-label">Offer Conversion Rate</span>
               </div>
             </div>
@@ -949,7 +949,7 @@ export const HackathonsView: React.FC = () => {
           <form onSubmit={handleReviewCertificate}>
             <p style={{ fontSize: '0.9rem', color: '#4B5563', marginBottom: '1rem' }}>
               Claimed Category: <strong>{reviewModalSub.category}</strong><br />
-              Document Link: <a href={reviewModalSub.certificate_url} target="_blank" rel="noopener noreferrer" style={{ color: '#635BFF' }}>View Document ↗</a>
+              Document Link: <a href={reviewModalSub.certificate_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>View Document ↗</a>
             </p>
 
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>

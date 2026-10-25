@@ -37,11 +37,11 @@ export const ComponentsShowcaseView: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>1. Buttons & Interaction States</CardTitle>
-          <CardDescription>Primary Violet (#635BFF), hover states, secondary, outline, ghost, danger, sizes, and loading.</CardDescription>
+          <CardDescription>Primary Blue (#2563EB), hover states, secondary, outline, ghost, danger, sizes, and loading.</CardDescription>
         </CardHeader>
         <CardContent className="showcase-section">
           <div className="component-row">
-            <Button variant="primary">Primary Violet</Button>
+            <Button variant="primary">Primary Blue</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="outline">Outline</Button>
             <Button variant="ghost">Ghost</Button>

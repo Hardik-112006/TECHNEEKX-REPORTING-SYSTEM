@@ -1,6 +1,7 @@
 from django.db import models
 
 class Team(models.Model):
+    objects = models.Manager()
     team_id = models.AutoField(primary_key=True, db_column='team_id')
     name = models.CharField(max_length=100, unique=True)
     type = models.CharField(max_length=50)
@@ -22,6 +23,7 @@ class Team(models.Model):
         return f"{self.name} ({self.type})"
 
 class Group(models.Model):
+    objects = models.Manager()
     group_id = models.AutoField(primary_key=True, db_column='group_id')
     name = models.CharField(max_length=100)
     team = models.ForeignKey(

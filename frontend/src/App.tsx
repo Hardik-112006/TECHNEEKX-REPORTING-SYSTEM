@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { DEMO_USERS } from './types/api'
 import { AppShell } from './components/layout/AppShell'
 import { AuthView } from './views/AuthView'
 import { DashboardView } from './views/DashboardView'
@@ -14,22 +13,17 @@ import { HackathonsView } from './views/HackathonsView'
 import { OfficialDocumentsView } from './views/OfficialDocumentsView'
 import { AnalyticsView } from './views/AnalyticsView'
 import { ApprovalsView } from './views/ApprovalsView'
-import { ComponentsShowcaseView } from './views/ComponentsShowcaseView'
-import { Button } from './components/ui'
-import { Sparkles, LogOut } from 'lucide-react'
+import { SubmissionsReviewView } from './views/SubmissionsReviewView'
 
 const AuthenticatedApp: React.FC = () => {
-  const { user, roleName, roleTier, logout, switchDemoUser } = useAuth()
+  const { user, roleName, logout, switchDemoUser } = useAuth()
   const [activeNav, setActiveNav] = useState<string>('dashboard')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isSwitching, setIsSwitching] = useState(false)
 
   const handleRoleSwitch = async (email: string) => {
-    setIsSwitching(true)
     try {
       await switchDemoUser(email)
-    } finally {
-      setIsSwitching(false)
+    } catch (err) {
+      console.error('Failed to switch role persona:', err)
     }
   }
 
@@ -44,6 +38,11 @@ const AuthenticatedApp: React.FC = () => {
         return {
           title: 'Tasks & Workflow Management',
           subtitle: 'State transitions: Assigned → In Progress → Submitted → Approved'
+        }
+      case 'submissions':
+        return {
+          title: 'Submission Review',
+          subtitle: 'Inspect submitted proofs, verify evidence links, and conduct peer and official reviews'
         }
       case 'leaderboard':
         return {
@@ -90,11 +89,6 @@ const AuthenticatedApp: React.FC = () => {
           title: 'System Audit History',
           subtitle: 'Immutable audit trail of actions, state shifts, and scoring'
         }
-      case 'components':
-        return {
-          title: 'Design System & Component Library',
-          subtitle: 'Accessible UI primitives matching SaaS tokens'
-        }
       default:
         return {
           title: 'TechNeekX Platform',
@@ -108,7 +102,11 @@ const AuthenticatedApp: React.FC = () => {
   const currentUserData = {
     name: user?.name || 'Community Member',
     email: user?.email || '',
-    role: roleName
+    role: roleName,
+    hierarchyLevel: user?.hierarchy_level ? `Level ${user.hierarchy_level}` : undefined,
+    category: user?.category,
+    position: user?.position,
+    groupName: user?.group_name
   }
 
   return (
@@ -119,73 +117,18 @@ const AuthenticatedApp: React.FC = () => {
       subtitle={subtitle}
       user={currentUserData}
       onLogout={logout}
-      onSearchChange={(val) => setSearchTerm(val)}
-      searchValue={searchTerm}
+      onRoleSwitch={handleRoleSwitch}
     >
-      {/* Live Role Switcher Bar */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 16px',
-          backgroundColor: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          marginBottom: 'var(--space-6)',
-          flexWrap: 'wrap',
-          gap: '8px'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Sparkles size={16} color="var(--color-primary)" />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-main)' }}>
-            Live Persona Authenticator:
-          </span>
-          <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
-            Logged in as <strong>{user?.name}</strong> (Tier {roleTier})
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          {DEMO_USERS.slice(0, 4).map((demo) => {
-            const isCurrent = user?.email === demo.email
-            return (
-              <Button
-                key={demo.email}
-                size="sm"
-                variant={isCurrent ? 'primary' : 'secondary'}
-                isLoading={isSwitching && isCurrent}
-                onClick={() => handleRoleSwitch(demo.email)}
-              >
-                {demo.role}
-              </Button>
-            )
-          })}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActiveNav('components')}
-          >
-            UI Showcase
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={logout}
-            title="Sign Out"
-            leftIcon={<LogOut size={12} />}
-          >
-            Logout
-          </Button>
-        </div>
-      </div>
-
       {/* Primary View Routing */}
       {activeNav === 'dashboard' && (
-        <DashboardView onNavigateToTasks={() => setActiveNav('tasks')} />
+        <DashboardView
+          onNavigateToTasks={() => setActiveNav('tasks')}
+          onNavigateToTeams={() => setActiveNav('teams')}
+          onNavigateToAnnouncements={() => setActiveNav('announcements')}
+        />
       )}
       {activeNav === 'tasks' && <TasksView />}
+      {activeNav === 'submissions' && <SubmissionsReviewView onNavigate={(id) => setActiveNav(id)} />}
       {activeNav === 'leaderboard' && <LeaderboardView />}
       {activeNav === 'career' && <CareerProfileView />}
       {activeNav === 'hackathons' && <HackathonsView />}
@@ -195,7 +138,6 @@ const AuthenticatedApp: React.FC = () => {
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}
-      {activeNav === 'components' && <ComponentsShowcaseView />}
     </AppShell>
   )
 }
@@ -221,7 +163,7 @@ const AppRoot: React.FC = () => {
             width: '40px',
             height: '40px',
             borderRadius: '50%',
-            border: '3px solid rgba(99, 91, 255, 0.2)',
+            border: '3px solid rgba(37, 99, 235, 0.2)',
             borderTopColor: 'var(--color-primary)',
             animation: 'spin 0.8s linear infinite'
           }}

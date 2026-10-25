@@ -44,7 +44,7 @@ test('Comprehensive Acceptance, Security, & Boundary Test Suite', async (t) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'riya.member@example.com',
+        email: 'member.dev@example.com',
         password: 'Techneekx@2026'
       })
     })
@@ -52,17 +52,17 @@ test('Comprehensive Acceptance, Security, & Boundary Test Suite', async (t) => {
     assert.equal(res.status, 200, 'Member login should be 200 OK')
     const data = await res.json()
     assert.equal(data.user.role.name, 'Member')
-    assert.equal(data.user.role_tier, 5)
+    assert.equal(data.user.role_tier, 4)
     memberToken = data.tokens.access
     memberUserId = data.user.user_id
   })
 
-  await t.test('4. Authentication Flow: Login with second Member (Kabir)', async () => {
+  await t.test('4. Authentication Flow: Login with second Member (Kavya)', async () => {
     const res = await fetch(`${BASE_URL}/auth/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'kabir.member@example.com',
+        email: 'member.kavya@example.com',
         password: 'Techneekx@2026'
       })
     })

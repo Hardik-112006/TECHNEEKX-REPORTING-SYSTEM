@@ -4,6 +4,7 @@ from django.utils import timezone
 from apps.accounts.managers import UserManager
 
 class Role(models.Model):
+    objects = models.Manager()
     role_id = models.AutoField(primary_key=True, db_column='role_id')
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(null=True, blank=True)
@@ -28,7 +29,10 @@ class User(AbstractBaseUser):
     password = models.TextField(db_column='password')
     role = models.ForeignKey(Role, on_delete=models.PROTECT, db_column='role_id', related_name='users')
     team = models.ForeignKey('teams.Team', on_delete=models.SET_NULL, null=True, blank=True, db_column='team_id', related_name='members')
+    group = models.ForeignKey('teams.Group', on_delete=models.SET_NULL, null=True, blank=True, db_column='group_id', related_name='group_members')
     status = models.CharField(max_length=20, default='Active', choices=STATUS_CHOICES)
+    position = models.CharField(max_length=120, null=True, blank=True)
+    is_demo = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(default=timezone.now, db_column='created_at')
 
     # Exclude last_login since it is not part of the source SQL schema
@@ -44,14 +48,25 @@ class User(AbstractBaseUser):
         indexes = [
             models.Index(fields=['role'], name='idx_users_role_id'),
             models.Index(fields=['team'], name='idx_users_team_id'),
+            models.Index(fields=['group'], name='idx_users_group_id'),
         ]
 
     def __str__(self):
         return f"{self.name} ({self.email})"
 
     @property
+    def hierarchy_level(self):
+        from apps.accounts.permissions import get_user_hierarchy_level
+        return get_user_hierarchy_level(self.role.name) if self.role else 4
+
+    @property
+    def category(self):
+        from apps.accounts.permissions import get_role_category
+        return get_role_category(self.role.name) if self.role else 'Members'
+
+    @property
     def is_staff(self):
-        return self.role and self.role.name in ('Founder', 'Official')
+        return self.role and self.role.name in ('Founder', 'Official', 'Chairman', 'Managing Director', 'President')
 
     @property
     def is_superuser(self):

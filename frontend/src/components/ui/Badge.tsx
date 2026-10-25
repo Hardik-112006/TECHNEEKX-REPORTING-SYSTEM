@@ -25,30 +25,32 @@ export const Badge: React.FC<BadgeProps> = ({
 
   if (status) {
     switch (status) {
-      case 'Assigned':
-        resolvedVariant = 'info';
-        break;
-      case 'In Progress':
+      case 'Pending':
         resolvedVariant = 'warning';
         break;
-      case 'Submitted':
+      case 'In Progress':
         resolvedVariant = 'primary';
         break;
+      case 'Submitted':
+      case 'Under Review':
+        resolvedVariant = 'info';
+        break;
       case 'Approved':
+      case 'Completed':
       case 'Active':
         resolvedVariant = 'success';
         break;
       case 'Changes Requested':
+      case 'Rejected':
+      case 'Overdue':
         resolvedVariant = 'danger';
         break;
-      case 'Pending':
-        resolvedVariant = 'warning';
-        break;
+      case 'Cancelled':
       case 'Inactive':
-        resolvedVariant = 'default';
-        break;
+      case 'Assigned':
       default:
         resolvedVariant = 'default';
+        break;
     }
   }
 

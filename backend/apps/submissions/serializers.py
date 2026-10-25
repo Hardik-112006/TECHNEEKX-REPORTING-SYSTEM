@@ -6,16 +6,19 @@ from apps.accounts.serializers import UserSummarySerializer
 URL_REGEX = re.compile(r'^https?://[^\s/$.?#].[^\s]*$', re.IGNORECASE)
 
 class TaskProofSerializer(serializers.ModelSerializer):
+    task_id = serializers.IntegerField(source='task.task_id', read_only=True)
     submitted_by = UserSummarySerializer(read_only=True)
     task_title = serializers.CharField(source='task.title', read_only=True)
+    task_status = serializers.CharField(source='task.status', read_only=True)
 
     class Meta:
         model = TaskProof
         fields = [
-            'proof_id', 'task_id', 'task_title', 'submitted_by',
+            'proof_id', 'task_id', 'task_title', 'task_status', 'submitted_by',
             'github_link', 'screenshots', 'description', 'submitted_at'
         ]
-        read_only_fields = ['proof_id', 'task_id', 'task_title', 'submitted_by', 'submitted_at']
+        read_only_fields = ['proof_id', 'task_id', 'task_title', 'task_status', 'submitted_by', 'submitted_at']
+
 
 
 class TaskProofCreateSerializer(serializers.ModelSerializer):
@@ -54,6 +57,8 @@ class TaskProofCreateSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    task_id = serializers.IntegerField(source='task.task_id', read_only=True)
+    proof_id = serializers.IntegerField(source='proof.proof_id', read_only=True, default=None)
     reviewer = UserSummarySerializer(read_only=True)
     task_title = serializers.CharField(source='task.title', read_only=True)
 
@@ -63,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             'review_id', 'task_id', 'task_title', 'proof_id',
             'reviewer', 'decision', 'feedback', 'reviewed_at'
         ]
-        read_only_fields = ['review_id', 'task_id', 'task_title', 'reviewer', 'reviewed_at']
+        read_only_fields = ['review_id', 'task_id', 'task_title', 'proof_id', 'reviewer', 'reviewed_at']
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):

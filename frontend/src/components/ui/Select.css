@@ -24,11 +24,35 @@
   padding: 8px 36px 8px 12px;
   font-size: 14px;
   color: var(--color-text-main);
-  background: transparent;
+  background-color: var(--color-surface);
   border: none;
   outline: none;
   cursor: pointer;
   appearance: none;
+}
+
+/* Ensure all options are readable across dark/light themes and browsers */
+.select-control option {
+  background-color: var(--color-surface, #181926);
+  color: var(--color-text-main, #f8fafc);
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+[data-theme="light"] .select-control option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme="dark"] .select-control option {
+  background-color: #151624;
+  color: #f8fafc;
+}
+
+.select-control option:checked,
+.select-control option:hover {
+  background-color: var(--color-primary, #6366f1) !important;
+  color: #ffffff !important;
 }
 
 .select-arrow {

@@ -104,7 +104,7 @@
 }
 
 .notif-action-text-btn:hover {
-  background: rgba(99, 91, 255, 0.1);
+  background: var(--color-primary-light);
 }
 
 .notif-list {
@@ -129,7 +129,7 @@
 }
 
 .notif-item.unread {
-  background: rgba(99, 91, 255, 0.04);
+  background: rgba(37, 99, 235, 0.04);
 }
 
 .notif-icon-box {
@@ -144,8 +144,8 @@
 }
 
 .notif-icon-info {
-  background: rgba(99, 91, 255, 0.15);
-  color: #635bff;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
 .notif-icon-warning {

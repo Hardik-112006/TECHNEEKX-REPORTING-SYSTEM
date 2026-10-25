@@ -1,61 +1,88 @@
 :root {
-  /* Brand & Core Palette */
-  --color-primary: #635BFF;
-  --color-primary-hover: #5145E5;
-  --color-primary-active: #4338CA;
-  --color-primary-light: #EEF2FF;
-  --color-primary-ring: rgba(99, 91, 255, 0.25);
+  /* ==========================================================================
+     TechNeekX Signature Design System Tokens
+     ========================================================================== */
 
-  --color-secondary: #818CF8;
-  --color-secondary-light: #F5F3FF;
-  --color-accent: #22D3EE;
+  /* Core Foundations */
+  --color-bg-app: #080D19;
+  --color-bg-secondary: #0D1424;
+  --color-sidebar-bg: #0A1020;
+  --color-surface: #111B2E;
+  --color-surface-elevated: #111B2E;
+  --color-surface-secondary: #162238;
+  --color-surface-hover: #192742;
+  --color-surface-muted: #0D1424;
 
-  /* Surfaces & Backgrounds */
-  --color-bg-app: #F6F7FB;
-  --color-surface: #FFFFFF;
-  --color-surface-hover: #F9FAFB;
-  --color-surface-muted: #F3F4F6;
-  
-  /* Sidebar */
-  --color-sidebar-bg: #111827;
-  --color-sidebar-surface: #1F2937;
-  --color-sidebar-border: #374151;
-  --color-sidebar-text: #9CA3AF;
-  --color-sidebar-text-hover: #E5E7EB;
-  --color-sidebar-text-active: #FFFFFF;
-  --color-sidebar-active-bg: rgba(99, 91, 255, 0.2);
+  /* Desktop & Mobile Sidebar */
+  --color-sidebar-surface: #0A1020;
+  --color-sidebar-border: #1E2D44;
+  --color-sidebar-text: #A3B2C7;
+  --color-sidebar-text-hover: #F8FAFC;
+  --color-sidebar-text-active: #F8FAFC;
+  --color-sidebar-active-bg: rgba(37, 99, 235, 0.16);
 
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --color-text-main: #111827;
-  --color-text-secondary: #6B7280;
-  --color-text-muted: #9CA3AF;
-  --color-text-inverse: #FFFFFF;
+  /* Typography & Contrast */
+  --font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-text-main: #F8FAFC;
+  --color-text-secondary: #A3B2C7;
+  --color-text-muted: #71829B;
+  --color-text-inverse: #080D19;
 
-  /* Borders & Dividers */
-  --color-border: #E5E7EB;
-  --color-border-subtle: #F3F4F6;
-  --color-border-hover: #D1D5DB;
-  --color-border-focus: #635BFF;
+  /* Borders, Dividers & Form Inputs */
+  --color-border: #26344B;
+  --color-border-subtle: #1A263A;
+  --color-border-hover: #3B4D6B;
+  --color-input-border: #26344B;
+  --color-focus-ring: rgba(59, 130, 246, 0.45);
+
+  /* Brand Accents */
+  --color-primary: #2563EB;
+  --color-primary-bright: #3B82F6;
+  --color-primary-hover: #1D4ED8;
+  --color-primary-active: #1E40AF;
+  --color-primary-light: rgba(37, 99, 235, 0.15);
+  --color-primary-border: rgba(59, 130, 246, 0.35);
+  --color-primary-ring: rgba(37, 99, 235, 0.35);
+
+  --color-secondary: #3B82F6;
+  --color-secondary-light: rgba(59, 130, 246, 0.15);
+  --color-accent: #7C3AED;
+
+  --color-violet: #7C3AED;
+  --color-violet-light: rgba(124, 58, 237, 0.16);
+  --color-magenta: #DB2777;
+  --color-magenta-light: rgba(219, 39, 119, 0.16);
+  --color-cyan: #06B6D4;
+  --color-cyan-light: rgba(6, 182, 212, 0.16);
+
+  /* TechNeekX Brand Gradients */
+  --gradient-brand: linear-gradient(110deg, #2563EB 0%, #7C3AED 55%, #DB2777 100%);
+  --gradient-brand-subtle: linear-gradient(110deg, rgba(37, 99, 235, 0.14) 0%, rgba(124, 58, 237, 0.14) 55%, rgba(219, 39, 119, 0.14) 100%);
+  --gradient-brand-glow: linear-gradient(110deg, rgba(37, 99, 235, 0.25) 0%, rgba(124, 58, 237, 0.25) 55%, rgba(219, 39, 119, 0.25) 100%);
+  --gradient-brand-border: linear-gradient(110deg, #3B82F6, #7C3AED, #DB2777);
 
   /* Status Colors */
-  --color-success: #16A34A;
-  --color-success-bg: #DCFCE7;
-  --color-success-text: #15803D;
+  --color-success: #22C55E;
+  --color-success-bg: rgba(34, 197, 94, 0.14);
+  --color-success-text: #4ADE80;
+  --color-success-border: rgba(34, 197, 94, 0.32);
 
   --color-warning: #F59E0B;
-  --color-warning-bg: #FEF3C7;
-  --color-warning-text: #B45309;
+  --color-warning-bg: rgba(245, 158, 11, 0.14);
+  --color-warning-text: #FBBF24;
+  --color-warning-border: rgba(245, 158, 11, 0.32);
 
-  --color-danger: #EF4444;
-  --color-danger-bg: #FEE2E2;
-  --color-danger-text: #B91C1C;
+  --color-danger: #F87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.14);
+  --color-danger-text: #F87171;
+  --color-danger-border: rgba(248, 113, 113, 0.32);
 
-  --color-info: #3B82F6;
-  --color-info-bg: #DBEAFE;
-  --color-info-text: #1D4ED8;
+  --color-info: #38BDF8;
+  --color-info-bg: rgba(56, 189, 248, 0.14);
+  --color-info-text: #38BDF8;
+  --color-info-border: rgba(56, 189, 248, 0.32);
 
-  /* Spacing Scale */
+  /* 4px Multiples Spacing Scale */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -66,22 +93,88 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* Radii */
+  /* Typography Scale */
+  --font-page-title: 30px;
+  --font-section-heading: 20px;
+  --font-card-heading: 16px;
+  --font-body: 14px;
+  --font-table: 13px;
+  --font-label: 12px;
+
+  /* Consistent SaaS Corner Radii */
   --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(16, 24, 40, 0.08), 0 1px 2px -1px rgba(16, 24, 40, 0.05);
-  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
-  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
-  --shadow-modal: 0 20px 24px -4px rgba(16, 24, 40, 0.12), 0 8px 8px -4px rgba(16, 24, 40, 0.04);
+  /* Premium Dark Shadows & Subtle Glows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+
+  --glow-brand: 0 0 20px rgba(124, 58, 237, 0.25);
+  --glow-primary: 0 0 16px rgba(37, 99, 235, 0.3);
+  --glow-accent: 0 0 16px rgba(219, 39, 119, 0.25);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+  /* Core Foundations */
+  --color-bg-app: #F8FAFC;
+  --color-bg-secondary: #F1F5F9;
+  --color-sidebar-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-secondary: #F8FAFC;
+  --color-surface-hover: #F1F5F9;
+  --color-surface-muted: #E2E8F0;
+
+  /* Desktop & Mobile Sidebar */
+  --color-sidebar-surface: #FFFFFF;
+  --color-sidebar-border: #E2E8F0;
+  --color-sidebar-text: #475569;
+  --color-sidebar-text-hover: #0F172A;
+  --color-sidebar-text-active: #2563EB;
+  --color-sidebar-active-bg: rgba(37, 99, 235, 0.08);
+
+  /* Typography & Contrast */
+  --color-text-main: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #FFFFFF;
+
+  /* Borders & Dividers */
+  --color-border: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-border-hover: #CBD5E1;
+  --color-input-border: #CBD5E1;
+  --color-focus-ring: rgba(37, 99, 235, 0.25);
+
+  /* Status overrides for accessible contrast on light */
+  --color-success-bg: rgba(34, 197, 94, 0.12);
+  --color-success-text: #16A34A;
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-warning-text: #D97706;
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-danger-text: #DC2626;
+  --color-info-bg: rgba(6, 182, 212, 0.12);
+  --color-info-text: #0284C7;
+
+  /* Light Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  --glow-brand: 0 0 14px rgba(124, 58, 237, 0.15);
+  --glow-primary: 0 0 12px rgba(37, 99, 235, 0.18);
+  --glow-accent: 0 0 12px rgba(219, 39, 119, 0.15);
 }

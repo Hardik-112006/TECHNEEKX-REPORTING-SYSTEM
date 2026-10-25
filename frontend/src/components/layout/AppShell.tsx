@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
-import { Sidebar } from './Sidebar';
-import { TopBar } from './TopBar';
-import './AppShell.css';
+import React, { useState } from 'react'
+import { Sidebar } from './Sidebar'
+import { TopBar } from './TopBar'
+import './AppShell.css'
 
 export interface AppShellProps {
-  children: React.ReactNode;
-  activeNav: string;
-  onNavigate: (navId: string) => void;
-  title: string;
-  subtitle?: string;
+  children: React.ReactNode
+  activeNav: string
+  onNavigate: (navId: string) => void
+  title: string
+  subtitle?: string
   user?: {
-    name: string;
-    email: string;
-    role: string;
-  };
-  onLogout?: () => void;
-  onSearchChange?: (val: string) => void;
-  searchValue?: string;
+    name: string
+    email: string
+    role: string
+    hierarchyLevel?: string
+    category?: string
+    position?: string | null
+    groupName?: string | null
+  }
+  onLogout?: () => void
+  onRoleSwitch?: (email: string) => void
 }
 
 export const AppShell: React.FC<AppShellProps> = ({
@@ -27,10 +30,9 @@ export const AppShell: React.FC<AppShellProps> = ({
   subtitle,
   user,
   onLogout,
-  onSearchChange,
-  searchValue
+  onRoleSwitch
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <div className="app-shell-container">
@@ -47,9 +49,10 @@ export const AppShell: React.FC<AppShellProps> = ({
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           title={title}
           subtitle={subtitle}
-          userRole={user?.role}
-          onSearchChange={onSearchChange}
-          searchValue={searchValue}
+          user={user}
+          onLogout={onLogout}
+          onRoleSwitch={onRoleSwitch}
+          onNavigate={onNavigate}
         />
         <main className="app-shell-content">
           <div className="content-inner">
@@ -58,5 +61,5 @@ export const AppShell: React.FC<AppShellProps> = ({
         </main>
       </div>
     </div>
-  );
-};
+  )
+}

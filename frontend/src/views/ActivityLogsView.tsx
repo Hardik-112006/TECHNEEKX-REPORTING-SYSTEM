@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Activity, RefreshCw } from 'lucide-react'
+import { Activity, RefreshCw, Download } from 'lucide-react'
 import {
   Card,
   CardHeader,
@@ -29,6 +29,7 @@ export const ActivityLogsView: React.FC = () => {
   const [totalCount, setTotalCount] = useState<number>(0)
   const [page, setPage] = useState<number>(1)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isExporting, setIsExporting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadLogs = async () => {
@@ -42,6 +43,26 @@ export const ActivityLogsView: React.FC = () => {
       setError(err?.message || 'Failed to load activity logs.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleExportCsv = async () => {
+    setIsExporting(true)
+    setError(null)
+    try {
+      const blob = await activityApi.exportCsv()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `techneekx_audit_history_${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to export audit history.')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -63,15 +84,27 @@ export const ActivityLogsView: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadLogs}
-          isLoading={isLoading}
-          leftIcon={<RefreshCw size={14} />}
-        >
-          Refresh Logs
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            isLoading={isExporting}
+            leftIcon={<Download size={14} />}
+          >
+            Download / Export (CSV)
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadLogs}
+            isLoading={isLoading}
+            leftIcon={<RefreshCw size={14} />}
+          >
+            Refresh Logs
+          </Button>
+        </div>
       </div>
 
       {error && (

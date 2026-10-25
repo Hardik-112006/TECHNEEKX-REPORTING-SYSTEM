@@ -169,10 +169,14 @@ export const TasksView: React.FC = () => {
 
     setIsCreating(true)
     try {
+      const deadlineIso = createDeadline.includes('T')
+        ? new Date(createDeadline).toISOString()
+        : new Date(`${createDeadline}T23:59:59`).toISOString()
+
       await tasksApi.createTask({
         title: createTitle.trim(),
         description: createDescription.trim(),
-        deadline: new Date(createDeadline).toISOString(),
+        deadline: deadlineIso,
         assigned_to: createAssignType === 'individual' ? Number(createAssigneeId) : null,
         team: createAssignType === 'team' ? Number(createTeamId) : null,
         priority: createPriority
@@ -316,9 +320,12 @@ export const TasksView: React.FC = () => {
     )
   }
 
-  // Check anti-self-review guard
+  // Check anti-self-review and inspection-only guard
   const canUserReviewTask = (task: Task) => {
     if (!user) return false
+    const userRole = user.role?.name || user.role_name || ''
+    // Requirement 2: Director's monitored tasks must be inspection-only
+    if (user.hierarchy_level === 2 || userRole === 'Director of Core Operations') return false
     if (roleTier > 4) return false // Tier 5 members cannot review
     // Reviewer cannot review a task assigned to them
     if (task.assigned_to?.user_id === user.user_id) return false
@@ -498,7 +505,7 @@ export const TasksView: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <span className="deadline-text">
-                            <Calendar size={12} /> {new Date(task.deadline).toLocaleDateString()}
+                            <Calendar size={12} /> {task.deadline_display || new Date(task.deadline).toLocaleDateString()}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -610,7 +617,7 @@ export const TasksView: React.FC = () => {
 
           <div className="form-row-grid">
             <Input
-              type="datetime-local"
+              type="date"
               label="Submission Deadline *"
               value={createDeadline}
               onChange={(e) => setCreateDeadline(e.target.value)}
@@ -829,7 +836,7 @@ export const TasksView: React.FC = () => {
               <Badge status={inspectTask.status as TaskStatus}>{inspectTask.status}</Badge>
               <span className="inspect-priority">Priority: {inspectTask.priority}</span>
               <span className="inspect-deadline">
-                Deadline: {new Date(inspectTask.deadline).toLocaleString()}
+                Deadline: {inspectTask.deadline_display || new Date(inspectTask.deadline).toLocaleDateString()}
               </span>
             </div>
 

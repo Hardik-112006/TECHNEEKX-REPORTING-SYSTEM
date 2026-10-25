@@ -11,7 +11,7 @@ from apps.submissions.serializers import (
     ReviewSerializer,
     ReviewCreateSerializer
 )
-from apps.accounts.permissions import user_has_tier
+from apps.accounts.permissions import user_has_tier, can_review_submissions, is_director_of_operations
 from apps.scoring.services import award_task_points
 from apps.activity.services import log_activity
 
@@ -27,10 +27,10 @@ class SubmitProofView(views.APIView):
         user = request.user
 
         # 1. Verify caller assignment authorization
-        is_assigned = (task.assigned_to_id == user.user_id) or (task.team_id and user.team_id == task.team_id)
+        is_assigned = (task.assigned_to_id == user.user_id) or (task.group_id and user.group_id == task.group_id and not task.assigned_to_id)
         if not is_assigned and not user_has_tier(user, 2):
             return Response(
-                {'error': 'You are not assigned to this task or its assigned team.'},
+                {'error': 'You are not assigned to this task.'},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -73,8 +73,13 @@ class ReviewTaskView(views.APIView):
         task = get_object_or_404(Task, pk=task_id)
         reviewer = request.user
 
-        # 1. Reviewer role authorization (Tier 1, 2, 3, or 4 required)
-        if not user_has_tier(reviewer, 4):
+        # 1. Reviewer role authorization (Founder, Officials, Core Leads only — Director has inspection-only oversight)
+        if not can_review_submissions(reviewer):
+            if is_director_of_operations(reviewer):
+                return Response(
+                    {'error': 'Director of Core Operations has monitoring oversight only and cannot approve or reject submissions.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
             return Response(
                 {'error': 'You do not have reviewer permissions. Only leads and officials can conduct reviews.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -94,7 +99,18 @@ class ReviewTaskView(views.APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # 3. Verify task status is 'Submitted'
+        # 3. Core Lead Group Isolation: Core Leads can only review tasks within their own group
+        from apps.accounts.permissions import is_core_team, is_official
+        if is_core_team(reviewer) and not is_official(reviewer):
+            task_group_id = task.group_id or (task.assigned_to.group_id if task.assigned_to else None)
+            is_creator = task.created_by_id == reviewer.user_id
+            if not is_creator and (not reviewer.group_id or task_group_id != reviewer.group_id):
+                return Response(
+                    {'error': 'Core Leads can only review submissions for tasks within their own group.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        # 4. Verify task status is 'Submitted'
         if task.status != 'Submitted':
             return Response(
                 {'error': f"Cannot review task: current status is '{task.status}' (expected 'Submitted')."},
@@ -128,6 +144,8 @@ class ReviewTaskView(views.APIView):
                 task.save(update_fields=['status'])
 
                 if decision == 'Approved':
+                    from apps.board.services import resolve_task_warnings
+                    resolve_task_warnings(task=task, actor=reviewer)
                     log_activity(
                         user=reviewer,
                         action='TASK_APPROVED',
@@ -152,33 +170,72 @@ class ReviewTaskView(views.APIView):
 
 class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    List and retrieve task proofs.
+    List and retrieve task proofs with strict role-based data isolation.
     """
     queryset = TaskProof.objects.select_related('task', 'submitted_by').all().order_by('-submitted_at')
     serializer_class = TaskProofSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        user = self.request.user
         queryset = super().get_queryset()
+
+        from apps.accounts.permissions import is_official, is_board, is_core_team
+        from django.db.models import Q
+
+        # Level 1 (Official) & Level 2 (Board): Org-wide / Monitoring scope
+        if is_official(user) or is_board(user):
+            pass
+        elif is_core_team(user):
+            # Level 3 (Core Team): Submissions for tasks in their group or submitted by them
+            q = Q(submitted_by=user) | Q(task__created_by=user)
+            if user.group_id:
+                q |= Q(task__group_id=user.group_id) | Q(task__assigned_to__group_id=user.group_id)
+            queryset = queryset.filter(q)
+        else:
+            # Level 4 (Members): ONLY their own submissions
+            queryset = queryset.filter(submitted_by=user)
+
         task_id = self.request.query_params.get('task_id')
         user_id = self.request.query_params.get('submitted_by')
         if task_id:
             queryset = queryset.filter(task_id=task_id)
         if user_id:
+            # Prevent members from querying another user's submissions
+            if not (is_official(user) or is_board(user) or is_core_team(user)) and int(user_id) != user.user_id:
+                return queryset.none()
             queryset = queryset.filter(submitted_by_id=user_id)
         return queryset
 
 
 class ReviewViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    List and retrieve task reviews.
+    List and retrieve task reviews with strict role-based data isolation.
     """
     queryset = Review.objects.select_related('task', 'proof', 'reviewer').all().order_by('-reviewed_at')
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        user = self.request.user
         queryset = super().get_queryset()
+
+        from apps.accounts.permissions import is_official, is_board, is_core_team
+        from django.db.models import Q
+
+        if is_official(user) or is_board(user):
+            pass
+        elif is_core_team(user):
+            q = Q(reviewer=user) | Q(task__created_by=user)
+            if user.group_id:
+                q |= Q(task__group_id=user.group_id) | Q(task__assigned_to__group_id=user.group_id)
+            queryset = queryset.filter(q)
+        else:
+            # Members only see reviews on their own tasks or proofs
+            queryset = queryset.filter(
+                Q(task__assigned_to=user) | Q(proof__submitted_by=user)
+            )
+
         task_id = self.request.query_params.get('task_id')
         reviewer_id = self.request.query_params.get('reviewer_id')
         if task_id:

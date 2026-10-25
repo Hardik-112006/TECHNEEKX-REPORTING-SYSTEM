@@ -11,66 +11,29 @@ export type RoleName =
   | 'Chairman'
   | 'Managing Director'
   | 'President'
-  | 'CTO'
+  | 'Official'
   | 'Director of Core Operations'
-  | 'Mentor'
   | 'Core Team Lead'
-  | 'Deputy'
-  | 'Group Leader'
+  | 'Core Lead'
   | 'Member'
 
-export interface DemoUserOption {
+export interface DemoAccount {
   email: string
+  name: string
   label: string
   role: RoleName | string
+  position?: string | null
+  group_id?: number | null
+  group_name?: string | null
+  team_name?: string | null
   tier: number
+  hierarchy_level: number
+  category: 'Founder' | 'Officials' | 'Director of Core Operations' | 'Core Leads' | 'Members' | string
   description: string
 }
 
-export const DEMO_USERS: DemoUserOption[] = [
-  {
-    email: 'founder@example.com',
-    label: 'Demo Founder',
-    role: 'Founder',
-    tier: 1,
-    description: 'Tier 1 Executive: Full platform oversight, team creation, user management'
-  },
-  {
-    email: 'official@example.com',
-    label: 'Demo Official',
-    role: 'Official',
-    tier: 2,
-    description: 'Tier 2 Official: Org-wide review privileges, team management'
-  },
-  {
-    email: 'aarav.lead@example.com',
-    label: 'Aarav (Core Lead)',
-    role: 'Core Team Lead',
-    tier: 3,
-    description: 'Tier 3 Core Lead: Create tasks, assign members, review team tasks'
-  },
-  {
-    email: 'meera.leader@example.com',
-    label: 'Meera (Group Leader)',
-    role: 'Group Leader',
-    tier: 4,
-    description: 'Tier 4 Leader: Conduct reviews, manage group assignments'
-  },
-  {
-    email: 'riya.member@example.com',
-    label: 'Riya (Member)',
-    role: 'Member',
-    tier: 5,
-    description: 'Tier 5 Member: Execute assigned tasks, submit proofs, view feedback'
-  },
-  {
-    email: 'kabir.member@example.com',
-    label: 'Kabir (Member)',
-    role: 'Member',
-    tier: 5,
-    description: 'Tier 5 Member: Complete tasks, earn points, track rank'
-  }
-]
+export type DemoUserOption = DemoAccount
+
 
 export interface Role {
   role_id: number
@@ -86,11 +49,16 @@ export interface UserSummary {
   role_name?: string
   team_id?: number | null
   team_name?: string | null
+  group_id?: number | null
+  group_name?: string | null
   status?: string
+  position?: string | null
+  role_tier?: number
+  hierarchy_level?: number
+  category?: 'Founder' | 'Officials' | 'Director of Core Operations' | 'Core Leads' | 'Members' | 'Official Team' | 'Board' | 'Core Team' | string
 }
 
 export interface UserDetail extends UserSummary {
-  role_tier: number
   phone?: string
   bio?: string
   created_at: string
@@ -136,6 +104,7 @@ export interface TaskProof {
   proof_id: number
   task_id: number
   task_title?: string
+  task_status?: string
   submitted_by: UserSummary
   github_link?: string
   screenshots?: string
@@ -159,13 +128,22 @@ export interface Task {
   title: string
   description: string
   deadline: string
+  deadline_display?: string
+  is_overdue?: boolean
   assigned_to?: UserSummary | null
   team?: TeamSummary | null
+  team_name?: string | null
+  group?: number | null
+  group_name?: string | null
+  parent_task?: number | null
+  parent_task_title?: string | null
+  subtasks_count?: number
   created_by: UserSummary
   status: TaskStatus
-  priority: 'Low' | 'Medium' | 'High' | 'Critical' | string
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical' | string
   created_at: string
-  proof_count: number
+  proof_count?: number
+  proofs_count?: number
   latest_proof?: TaskProof
 }
 
@@ -177,7 +155,106 @@ export interface TaskCreatePayload {
   assigned_to_id?: number | null
   team?: number | null
   team_id?: number | null
+  group_id?: number | null
+  parent_task_id?: number | null
   priority?: string
+}
+
+export interface WarningAuditLog {
+  audit_id: number
+  warning_id: number
+  action: string
+  actor?: number | null
+  actor_name?: string | null
+  details: string
+  created_at: string
+}
+
+export interface BoardWarning {
+  warning_id: number
+  target_user?: number | null
+  target_user_name?: string | null
+  target_group?: number | null
+  target_group_name?: string | null
+  related_task?: number | null
+  task_title?: string | null
+  original_deadline?: string | null
+  category?: string | null
+  reason: string
+  issued_by: number
+  issued_by_name: string
+  status: 'Active' | 'Acknowledged' | 'Resolved' | 'Expired'
+  expiry_date?: string | null
+  revised_deadline?: string | null
+  revised_deadline_by?: number | null
+  revised_deadline_by_name?: string | null
+  revised_deadline_at?: string | null
+  resolved_at?: string | null
+  resolved_by?: number | null
+  resolved_by_name?: string | null
+  created_at: string
+  audit_logs?: WarningAuditLog[]
+}
+
+export interface RemovalReview {
+  review_id: number
+  target_user?: number | null
+  target_user_name?: string | null
+  target_group?: number | null
+  target_group_name?: string | null
+  reason: string
+  flagged_by: number
+  flagged_by_name: string
+  status: 'Pending' | 'Approved_Deactivated' | 'Rejected'
+  official_notes?: string
+  resolved_by?: number | null
+  resolved_by_name?: string | null
+  created_at: string
+  resolved_at?: string | null
+}
+
+export interface BoardMonitoringMetrics {
+  total_overdue: number
+  total_awaiting_review: number
+  total_missing_reports: number
+  total_active_warnings: number
+  total_warning_history?: number
+  total_pending_removals: number
+  group_statistics: Array<{
+    group_id: number
+    name: string
+    members_count: number
+    total_tasks: number
+    completed_tasks: number
+    overdue_tasks: number
+    completion_rate: number
+  }>
+  recent_overdue_tasks: Array<{
+    task_id: number
+    title: string
+    assigned_to: string
+    group: string
+    deadline: string | null
+    status: string
+  }>
+  recent_warnings: Array<{
+    warning_id: number
+    target: string
+    target_user_id?: number | null
+    reason: string
+    issued_by: string
+    created_at: string
+    status: string
+  }>
+  pending_removal_reviews: Array<{
+    review_id: number
+    target: string
+    target_user_id?: number | null
+    reason: string
+    flagged_by: string
+    created_at: string
+    status: string
+  }>
 }
 
 export interface ProofSubmitPayload {
@@ -204,6 +281,13 @@ export interface Announcement {
   announcement_id: number
   title: string
   content: string
+  category?: string
+  attachment?: string | null
+  attachment_url?: string | null
+  attachment_name?: string | null
+  attachment_type?: string | null
+  external_link?: string | null
+  drive_link?: string | null
   created_by: UserSummary
   created_at: string
   target_role?: string
@@ -697,5 +781,56 @@ export interface ApprovalWorkflow {
   created_at: string
   updated_at: string
 }
+
+// -------------------------------------------------------------
+// Global Search & Live ETA Types
+// -------------------------------------------------------------
+
+export interface SearchItem {
+  id: number
+  title: string
+  subtitle: string
+  status?: string
+  type?: string
+  email?: string
+  task_id?: number
+  target_nav: string
+}
+
+export interface SearchResults {
+  query: string
+  total_results: number
+  results: {
+    tasks: SearchItem[]
+    teams: SearchItem[]
+    members: SearchItem[]
+    announcements: SearchItem[]
+    submissions: SearchItem[]
+  }
+}
+
+export interface UpcomingEtaItem {
+  task_id: number
+  title: string
+  status: string
+  deadline: string
+  formatted_eta: string
+  is_overdue: boolean
+}
+
+export interface LiveEtaResponse {
+  has_eta: boolean
+  formatted_eta: string
+  task_id?: number
+  task_title?: string
+  status?: string
+  deadline?: string
+  is_overdue?: boolean
+  context?: string
+  last_updated?: string
+  message?: string
+  upcoming?: UpcomingEtaItem[]
+}
+
 
 

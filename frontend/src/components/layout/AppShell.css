@@ -17,16 +17,60 @@
 .app-shell-content {
   flex: 1;
   padding: var(--space-6);
+  transition: padding var(--transition-fast);
 }
 
 .content-inner {
-  max-width: 1300px;
+  max-width: 1600px;
   width: 100%;
   margin: 0 auto;
 }
 
-@media (max-width: 768px) {
+/* Extra-large desktop: 1536px and above */
+@media (min-width: 1536px) {
+  .app-shell-content {
+    padding: var(--space-8) var(--space-10);
+  }
+}
+
+/* Large desktop: 1280px–1535px */
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .app-shell-content {
+    padding: var(--space-8);
+  }
+}
+
+/* Desktop: 1024px–1279px */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .app-shell-content {
+    padding: var(--space-6);
+  }
+}
+
+/* Small desktop / tablet landscape: 768px–1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-shell-content {
+    padding: var(--space-6);
+  }
+}
+
+/* Tablet: 640px–767px */
+@media (min-width: 640px) and (max-width: 767px) {
+  .app-shell-content {
+    padding: var(--space-5);
+  }
+}
+
+/* Mobile: 375px–639px */
+@media (min-width: 375px) and (max-width: 639px) {
   .app-shell-content {
     padding: var(--space-4);
+  }
+}
+
+/* Small mobile: 320px–374px */
+@media (max-width: 374px) {
+  .app-shell-content {
+    padding: var(--space-3);
   }
 }

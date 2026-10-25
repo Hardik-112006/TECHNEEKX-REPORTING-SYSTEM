@@ -36,8 +36,8 @@ class MouDocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_by', 'approved_by', 'created_at', 'updated_at']
 
     def validate(self, attrs):
-        start = attrs.get('validity_start')
-        end = attrs.get('validity_end')
+        start = attrs.get('validity_start', getattr(self.instance, 'validity_start', None))
+        end = attrs.get('validity_end', getattr(self.instance, 'validity_end', None))
         if start and end and start >= end:
             raise serializers.ValidationError({"validity_end": "Validity end date must be after validity start date."})
         return attrs

@@ -55,13 +55,13 @@ export const OfficialDocumentsView: React.FC = () => {
     min_role_tier: 5
   })
 
-  const [mouForm, setMouForm] = useState({
+  const [mouForm, setMouForm] = useState(() => ({
     organization_name: '',
     signatory_second_party: '',
     validity_start: new Date().toISOString().split('T')[0],
     validity_end: '',
     scope_of_work: ''
-  })
+  }))
 
   const [mouReviewForm, setMouReviewForm] = useState({
     status: 'Approved',
@@ -102,11 +102,7 @@ export const OfficialDocumentsView: React.FC = () => {
     benefits_summary: ''
   })
 
-  useEffect(() => {
-    loadTabData()
-  }, [activeTab])
-
-  const loadTabData = async () => {
+  const loadTabData = React.useCallback(async () => {
     setLoading(true)
     setStatusMessage(null)
     try {
@@ -131,7 +127,11 @@ export const OfficialDocumentsView: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab])
+
+  useEffect(() => {
+    loadTabData()
+  }, [loadTabData])
 
   const handleResourceDownload = async (resource: ResourceMaterial) => {
     try {
@@ -712,7 +712,7 @@ export const OfficialDocumentsView: React.FC = () => {
               onChange={e => setResourceForm({ ...resourceForm, min_role_tier: parseInt(e.target.value, 10) })}
             >
               <option value={5}>Tier 5 (All Community Members)</option>
-              <option value={3}>Tier 3 (Core Team Leads & Mentors Only)</option>
+              <option value={3}>Tier 3 (Core Team Leads Only)</option>
               <option value={2}>Tier 2 (Officials Only)</option>
             </select>
           </div>

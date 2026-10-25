@@ -30,24 +30,16 @@ export const AnalyticsView: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
   const [downloading, setDownloading] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadTeams()
-  }, [])
-
-  useEffect(() => {
-    loadAnalytics()
-  }, [days, selectedTeamId])
-
-  const loadTeams = async () => {
+  const loadTeams = React.useCallback(async () => {
     try {
       const res = await teamsApi.getTeams()
       setTeams(Array.isArray(res) ? res : res.results || [])
     } catch {
       // Fallback
     }
-  }
+  }, [])
 
-  const loadAnalytics = async () => {
+  const loadAnalytics = React.useCallback(async () => {
     setLoading(true)
     setStatusMessage(null)
     try {
@@ -61,7 +53,15 @@ export const AnalyticsView: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [days, selectedTeamId])
+
+  useEffect(() => {
+    loadTeams()
+  }, [loadTeams])
+
+  useEffect(() => {
+    loadAnalytics()
+  }, [loadAnalytics])
 
   // Trigger file download helper
   const triggerDownload = (blob: Blob, filename: string) => {
@@ -306,7 +306,7 @@ export const AnalyticsView: React.FC = () => {
               <CardTitle>Workload Activity & Completion Trend</CardTitle>
               <div className="chart-legend">
                 <div className="legend-item">
-                  <div className="legend-dot" style={{ background: '#635bff' }} />
+                  <div className="legend-dot" style={{ background: 'var(--color-primary)' }} />
                   <span>Tasks Created</span>
                 </div>
                 <div className="legend-item">

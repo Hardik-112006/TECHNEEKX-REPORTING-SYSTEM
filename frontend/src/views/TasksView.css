@@ -123,7 +123,7 @@
 }
 
 .allocation-pill.user {
-  background: rgba(99, 91, 255, 0.08);
+  background: var(--color-primary-light);
   color: var(--color-primary);
 }
 
@@ -234,8 +234,9 @@
   gap: var(--space-2);
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border: 2px solid var(--color-border);
-  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-main);
   font-weight: 600;
   font-size: var(--font-sm);
   cursor: pointer;
@@ -311,7 +312,7 @@
   padding: var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: #FFFFFF;
+  background: var(--color-surface-secondary);
 }
 
 .proof-header,
@@ -369,9 +370,80 @@
   margin-top: 4px;
 }
 
-@media (max-width: 640px) {
+/* Tablet & below: < 768px */
+@media (max-width: 767px) {
+  .tasks-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .tasks-actions-header {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .tasks-actions-header button {
+    width: 100%;
+  }
+
+  .filter-card-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .search-form {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .filter-selectors {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Mobile: 375px–639px */
+@media (min-width: 375px) and (max-width: 639px) {
   .form-row-grid,
   .decision-buttons-grid {
     grid-template-columns: 1fr;
   }
+
+  .table-actions-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
+
+/* Small mobile: 320px–374px */
+@media (max-width: 374px) {
+  .form-row-grid,
+  .decision-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tasks-title {
+    font-size: 20px;
+  }
+
+  .filter-selectors {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-select-wrap {
+    width: 100%;
+  }
+
+  .status-select-wrap select {
+    width: 100%;
+  }
+
+  .table-actions-cell {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+

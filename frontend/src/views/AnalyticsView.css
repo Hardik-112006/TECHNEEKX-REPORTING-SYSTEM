@@ -153,7 +153,7 @@
 
 .bar-created {
   width: 10px;
-  background: #635bff;
+  background: var(--color-primary);
   border-radius: 3px 3px 0 0;
   transition: height 0.3s ease;
 }
