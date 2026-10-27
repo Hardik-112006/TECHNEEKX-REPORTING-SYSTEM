@@ -44,13 +44,12 @@ const CATEGORIES = [
 ] as const
 
 export const AnnouncementsView: React.FC = () => {
-  const { user, roleTier, roleName } = useAuth()
-  
-  // Authorized publishers: Founder and Officials (Level 1 / Tier <= 2)
+  const { user, roleName } = useAuth()
+
+  // Mirrors the backend rule: Founder/Officials, or anyone granted announcement rights
   const isAuthorizedPublisher =
-    user?.hierarchy_level === 1 ||
     ['Founder', 'Chairman', 'Managing Director', 'President', 'Official'].includes(roleName) ||
-    roleTier <= 2
+    !!user?.can_post_announcements
 
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)

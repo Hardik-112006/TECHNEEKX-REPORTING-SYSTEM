@@ -337,7 +337,16 @@ export const HackathonsView: React.FC = () => {
       </div>
 
       {/* TAB 1: Hackathon Events Directory */}
-      {activeTab === 'directory' && (
+      {activeTab === 'directory' && hackathons.length === 0 && (
+        <EmptyState
+          title="No Hackathons Yet"
+          description={isOfficial
+            ? 'Create the first hackathon event to open registrations and certificate submissions.'
+            : 'Upcoming hackathons will appear here once Officials publish them.'}
+        />
+      )}
+
+      {activeTab === 'directory' && hackathons.length > 0 && (
         <div className="hackathon-grid">
           {hackathons.map((h) => {
             const isSelected = selectedHackathon?.id === h.id
@@ -417,7 +426,7 @@ export const HackathonsView: React.FC = () => {
             <CardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <CardTitle>Certificate Verification Queue</CardTitle>
-                <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
                   {isReviewer
                     ? 'Official Reviewer Queue: Verify claims and award anti-duplicate placement points.'
                     : 'Your submitted hackathon achievements and review outcomes.'}
@@ -455,7 +464,7 @@ export const HackathonsView: React.FC = () => {
                         <TableCell><strong>{cert.hackathon_title || `Hackathon #${cert.hackathon}`}</strong></TableCell>
                         <TableCell>
                           {cert.participant_name}
-                          <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>{cert.participant_email}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{cert.participant_email}</div>
                         </TableCell>
                         <TableCell><Badge variant="primary">{cert.category}</Badge></TableCell>
                         <TableCell>
@@ -483,7 +492,7 @@ export const HackathonsView: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           {cert.points_awarded > 0 ? (
-                            <span style={{ color: '#059669', fontWeight: 700 }}>+{cert.points_awarded} pts</span>
+                            <span style={{ color: 'var(--color-success-text)', fontWeight: 700 }}>+{cert.points_awarded} pts</span>
                           ) : (
                             '0 pts'
                           )}
@@ -493,11 +502,11 @@ export const HackathonsView: React.FC = () => {
                             <div>
                               <div>Reviewed by <strong>{cert.reviewer_name}</strong></div>
                               {cert.reviewer_feedback && (
-                                <div style={{ fontSize: '0.8rem', color: '#4B5563' }}>"{cert.reviewer_feedback}"</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>"{cert.reviewer_feedback}"</div>
                               )}
                             </div>
                           ) : (
-                            <span style={{ color: '#9CA3AF' }}>Pending review</span>
+                            <span style={{ color: 'var(--color-text-muted)' }}>Pending review</span>
                           )}
                         </TableCell>
                         {isReviewer && (
@@ -518,7 +527,7 @@ export const HackathonsView: React.FC = () => {
                                 Review
                               </Button>
                             ) : (
-                              <span style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>Decision final</span>
+                              <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Decision final</span>
                             )}
                           </TableCell>
                         )}
@@ -537,7 +546,7 @@ export const HackathonsView: React.FC = () => {
         <div>
           {selectedHackathon && (
             <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, color: '#111827' }}>Active Hackathon:</span>
+              <span style={{ fontWeight: 600, color: 'var(--color-text-main)' }}>Active Hackathon:</span>
               <select
                 value={selectedHackathon.id}
                 onChange={(e) => {
@@ -587,7 +596,7 @@ export const HackathonsView: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <strong>{r.participant_name}</strong>
-                          <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>{r.participant_email}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{r.participant_email}</div>
                         </TableCell>
                         <TableCell>{r.team_name || 'Individual'}</TableCell>
                         <TableCell><strong style={{ color: 'var(--color-primary)' }}>{r.hackathon_points} pts</strong></TableCell>
@@ -670,7 +679,7 @@ export const HackathonsView: React.FC = () => {
                 <span className="stat-label">Shortlisted</span>
               </div>
               <div className="analytics-stat-card">
-                <span className="stat-num" style={{ color: '#059669' }}>{analytics.total_accepted}</span>
+                <span className="stat-num" style={{ color: 'var(--color-success-text)' }}>{analytics.total_accepted}</span>
                 <span className="stat-label">Accepted Offers</span>
               </div>
               <div className="analytics-stat-card">
@@ -684,7 +693,7 @@ export const HackathonsView: React.FC = () => {
             <CardHeader style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <CardTitle>Official Recruitment Shortlist & Decisions</CardTitle>
-                <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
                   Review top contenders, record interview decisions, and extend Core Team / Intern offers.
                 </span>
               </div>
@@ -731,7 +740,7 @@ export const HackathonsView: React.FC = () => {
                       <TableRow key={c.id}>
                         <TableCell>
                           <strong>{c.participant_name}</strong>
-                          <div style={{ fontSize: '0.8rem', color: '#6B7280' }}>{c.participant_email}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{c.participant_email}</div>
                         </TableCell>
                         <TableCell>{c.team_name || 'Individual'}</TableCell>
                         <TableCell>
@@ -751,13 +760,13 @@ export const HackathonsView: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           {c.offered_role ? (
-                            <strong style={{ color: '#059669' }}>{c.offered_role}</strong>
+                            <strong style={{ color: 'var(--color-success-text)' }}>{c.offered_role}</strong>
                           ) : (
-                            <span style={{ color: '#9CA3AF' }}>None</span>
+                            <span style={{ color: 'var(--color-text-muted)' }}>None</span>
                           )}
                         </TableCell>
-                        <TableCell>{c.decision_reason || <span style={{ color: '#9CA3AF' }}>Pending interview</span>}</TableCell>
-                        <TableCell>{c.reviewer_name || <span style={{ color: '#9CA3AF' }}>Unassigned</span>}</TableCell>
+                        <TableCell>{c.decision_reason || <span style={{ color: 'var(--color-text-muted)' }}>Pending interview</span>}</TableCell>
+                        <TableCell>{c.reviewer_name || <span style={{ color: 'var(--color-text-muted)' }}>Unassigned</span>}</TableCell>
                         <TableCell>
                           <Button
                             size="sm"
@@ -901,7 +910,7 @@ export const HackathonsView: React.FC = () => {
           title={`Submit Certificate for ${selectedHackathon.title}`}
         >
           <form onSubmit={handleSubmitCertificate}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-main)', marginBottom: '0.4rem' }}>
               Achievement Category *
             </label>
             <select
@@ -947,12 +956,12 @@ export const HackathonsView: React.FC = () => {
           title={`Verify Certificate: ${reviewModalSub.participant_name}`}
         >
           <form onSubmit={handleReviewCertificate}>
-            <p style={{ fontSize: '0.9rem', color: '#4B5563', marginBottom: '1rem' }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
               Claimed Category: <strong>{reviewModalSub.category}</strong><br />
               Document Link: <a href={reviewModalSub.certificate_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)' }}>View Document ↗</a>
             </p>
 
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-main)', marginBottom: '0.4rem' }}>
               Verification Decision *
             </label>
             <select
@@ -1007,7 +1016,7 @@ export const HackathonsView: React.FC = () => {
           title={`Recruitment Decision: ${selectedCandidate.participant_name}`}
         >
           <form onSubmit={handleUpdateDecision}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text-main)', marginBottom: '0.4rem' }}>
               Selection Decision *
             </label>
             <select
