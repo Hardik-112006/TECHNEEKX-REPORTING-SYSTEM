@@ -11,9 +11,19 @@ import {
   Award,
   FileText,
   TrendingUp,
-  ShieldCheck
+  ShieldCheck,
+  Briefcase,
+  UserCog,
+  ExternalLink,
+  History
 } from 'lucide-react'
 import './Sidebar.css'
+
+// External sites are configured per deployment (see .env.example); empty values are hidden.
+const EXTERNAL_LINKS = [
+  { label: 'TechNeekX Website', href: import.meta.env.VITE_TECHNEEKX_SITE_URL as string | undefined },
+  { label: 'FS Website', href: import.meta.env.VITE_FS_SITE_URL as string | undefined }
+].filter((link): link is { label: string; href: string } => !!link.href)
 
 export interface NavItem {
   id: string
@@ -97,12 +107,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Hackathons & Recruitment',
       icon: <Award size={18} />,
       group: 'growth'
-    }
+    },
+    {
+      id: 'career',
+      label: 'Career & Resume',
+      icon: <Briefcase size={18} />,
+      group: 'growth'
+    },
+    ...(!isOfficial && !isBoard ? [
+      { id: 'activity', label: 'My Activity History', icon: <History size={18} />, group: 'growth' as const }
+    ] : [])
   ]
 
   // Governance & Administration Navigation
   const governanceNavItems: NavItem[] = [
     ...(isOfficial ? [
+      { id: 'users', label: 'Members & Roles', icon: <UserCog size={18} />, group: 'governance' as const },
       { id: 'approvals', label: 'Governance Approvals', icon: <ShieldCheck size={18} />, group: 'governance' as const },
       { id: 'documents', label: 'Official Documents', icon: <FileText size={18} />, group: 'governance' as const }
     ] : []),
@@ -121,6 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               type="button"
               className={`nav-button ${isActive ? 'nav-button-active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
               onClick={() => {
                 onNavigate(item.id)
                 onCloseMobile()
@@ -185,6 +206,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="nav-section-block">
               <div className="nav-group-title">GOVERNANCE & AUDIT</div>
               {renderNavList(governanceNavItems)}
+            </div>
+          )}
+
+          {EXTERNAL_LINKS.length > 0 && (
+            <div className="nav-section-block">
+              <div className="nav-group-title">WEBSITES</div>
+              <ul className="nav-list">
+                {EXTERNAL_LINKS.map((link) => (
+                  <li key={link.label} className="nav-item">
+                    <a className="nav-button" href={link.href} target="_blank" rel="noopener noreferrer">
+                      <span className="nav-icon"><ExternalLink size={18} /></span>
+                      <span className="nav-label">{link.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </nav>

@@ -2,7 +2,7 @@
   background: linear-gradient(
     90deg,
     var(--color-surface-muted) 0%,
-    #E5E7EB 50%,
+    var(--color-surface-hover) 50%,
     var(--color-surface-muted) 100%
   );
   background-size: 200% 100%;

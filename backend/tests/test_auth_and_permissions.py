@@ -190,6 +190,10 @@ class AuthAndPermissionsTests(APITestCase):
 
     # 6. Team Membership Management
     def test_team_member_add_and_remove(self):
+        # Core Leads manage the roster of their own team only
+        self.lead.team = self.team
+        self.lead.save(update_fields=['team'])
+
         # Core Lead assigns member to team
         self.client.force_authenticate(user=self.lead)
         add_res = self.client.post(f'/api/teams/{self.team.team_id}/add_member/', {

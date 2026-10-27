@@ -26,11 +26,11 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--color-surface, #1e2030);
+  background: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 14px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 14px rgba(var(--rgb-primary), 0.25);
   border: 1px solid var(--color-border);
   overflow: hidden;
   flex-shrink: 0;
@@ -133,7 +133,7 @@
 }
 
 .nav-button-active {
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.18) 0%, rgba(124, 58, 237, 0.08) 100%) !important;
+  background: linear-gradient(90deg, rgba(var(--rgb-primary), 0.18) 0%, rgba(var(--rgb-accent), 0.08) 100%) !important;
   color: var(--color-text-main) !important;
   font-weight: 600;
   border-left: 3px solid var(--color-primary-bright);
@@ -171,7 +171,7 @@
 
 .nav-button-active .nav-badge-pill {
   background-color: var(--color-primary-border);
-  color: var(--color-primary-hover);
+  color: var(--color-primary);
 }
 
 /* Sidebar Footer */

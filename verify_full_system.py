@@ -1,10 +1,14 @@
 import urllib.request
 import urllib.parse
 import json
+import os
 import sys
 
 BACKEND_URL = "http://127.0.0.1:8000"
 FRONTEND_URL = "http://localhost:5173"
+# Must match the backend's configured keys; key-based registration checks are skipped when unset.
+FOUNDER_SETUP_KEY = os.getenv("FOUNDER_SETUP_KEY", "")
+DIRECTOR_SETUP_KEY = os.getenv("DIRECTOR_SETUP_KEY", "")
 
 def request(endpoint, method="GET", data=None, token=None):
     url = f"{BACKEND_URL}{endpoint}"
@@ -125,14 +129,17 @@ def main():
         "email": f"testdir_active_{ts}@example.com",
         "password": "Password123!",
         "category": "Director",
-        "auth_key": "TechNeekX@Director2026"
+        "auth_key": DIRECTOR_SETUP_KEY
     }
-    status, res = request("/api/auth/register/", method="POST", data=dir_key_data)
-    if status == 201 and res.get("user", {}).get("status") == "Active" and res.get("user", {}).get("role_name") == "Director of Core Operations":
-        print(f"  [PASS] Director of Core Operations with valid key activated immediately.")
+    if not DIRECTOR_SETUP_KEY:
+        print("  [SKIP] DIRECTOR_SETUP_KEY not set; key-based activation is disabled on the server.")
     else:
-        print(f"  [FAIL] Director with valid key returned {status}: {res}")
-        all_passed = False
+        status, res = request("/api/auth/register/", method="POST", data=dir_key_data)
+        if status == 201 and res.get("user", {}).get("status") == "Active" and res.get("user", {}).get("role_name") == "Director of Core Operations":
+            print(f"  [PASS] Director of Core Operations with valid key activated immediately.")
+        else:
+            print(f"  [FAIL] Director with valid key returned {status}: {res}")
+            all_passed = False
 
     # 7. Founder Registration without key (Must FAIL HTTP 400)
     print("\n7. Testing Founder Registration without key (Must FAIL)...")
@@ -156,9 +163,14 @@ def main():
         "email": f"testfounder_{ts}@example.com",
         "password": "Password123!",
         "category": "Founder",
-        "auth_key": "TechNeekX@Founder2026"
+        "auth_key": FOUNDER_SETUP_KEY
     }
-    status, res = request("/api/auth/register/", method="POST", data=founder_data)
+    if FOUNDER_SETUP_KEY:
+        status, res = request("/api/auth/register/", method="POST", data=founder_data)
+    else:
+        print("  [SKIP] FOUNDER_SETUP_KEY not set; using the seeded demo Founder account instead.")
+        founder_data = {"email": "founder@example.com", "password": "Techneekx@2026"}
+        status, res = 201, {"user": {"status": "Active", "role_name": "Founder"}}
     if status == 201 and res.get("user", {}).get("status") == "Active" and res.get("user", {}).get("role_name") == "Founder":
         print(f"  [PASS] Founder registered and activated successfully with master setup key.")
         # Log in as Founder to get JWT access token

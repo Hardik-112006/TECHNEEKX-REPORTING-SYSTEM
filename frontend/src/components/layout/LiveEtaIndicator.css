@@ -258,7 +258,7 @@
 .eta-nav-btn {
   font-size: 12px;
   padding: 4px 10px;
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-solid);
   color: #ffffff;
   border-radius: var(--radius-sm);
   border: none;

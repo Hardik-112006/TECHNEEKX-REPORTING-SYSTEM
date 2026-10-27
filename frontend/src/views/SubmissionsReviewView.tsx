@@ -224,7 +224,7 @@ export const SubmissionsReviewView: React.FC<SubmissionsReviewViewProps> = ({ on
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Approved':
-        return <Badge variant="success" size="sm">Approved (+10 Pts)</Badge>
+        return <Badge variant="success" size="sm">Approved</Badge>
       case 'Changes Requested':
         return <Badge variant="warning" size="sm">Changes Requested</Badge>
       case 'Submitted':
@@ -617,22 +617,24 @@ export const SubmissionsReviewView: React.FC<SubmissionsReviewViewProps> = ({ on
                 <div
                   className={`decision-radio-card ${decision === 'Approved' ? 'selected-approve' : ''}`}
                   onClick={() => setDecision('Approved')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDecision('Approved') } }}
                   role="radio"
                   aria-checked={decision === 'Approved'}
                   tabIndex={0}
                 >
                   <div className="decision-radio-header">
                     <CheckCircle2 size={16} style={{ color: 'var(--color-success)' }} />
-                    <span>Approve (+10 Points)</span>
+                    <span>Approve (+{selectedProof.task_points ?? 10} Points)</span>
                   </div>
                   <span className="decision-radio-desc">
-                    Deliverable meets requirements. Completes the task and awards 10 points.
+                    Deliverable meets requirements. Completes the task and awards {selectedProof.task_points ?? 10} points.
                   </span>
                 </div>
 
                 <div
                   className={`decision-radio-card ${decision === 'Changes Requested' ? 'selected-changes' : ''}`}
                   onClick={() => setDecision('Changes Requested')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDecision('Changes Requested') } }}
                   role="radio"
                   aria-checked={decision === 'Changes Requested'}
                   tabIndex={0}

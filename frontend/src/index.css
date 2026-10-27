@@ -31,7 +31,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary-hover);
+  color: var(--color-primary-bright);
 }
 
 button, input, select, textarea {
@@ -139,7 +139,7 @@ button {
 .font-bold { font-weight: 700; }
 
 .text-gray-900 { color: var(--color-text-main); }
-.text-gray-700 { color: #334155; }
+.text-gray-700 { color: var(--color-text-secondary); }
 .text-gray-500 { color: var(--color-text-secondary); }
 .text-gray-400 { color: var(--color-text-muted); }
 .text-primary { color: var(--color-primary); }

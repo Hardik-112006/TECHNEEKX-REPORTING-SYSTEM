@@ -1,23 +1,42 @@
-import React, { useState } from 'react'
+import React, { Suspense, lazy, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppShell } from './components/layout/AppShell'
 import { AuthView } from './views/AuthView'
-import { DashboardView } from './views/DashboardView'
-import { TasksView } from './views/TasksView'
-import { LeaderboardView } from './views/LeaderboardView'
-import { TeamsView } from './views/TeamsView'
-import { AnnouncementsView } from './views/AnnouncementsView'
-import { ActivityLogsView } from './views/ActivityLogsView'
-import { CareerProfileView } from './views/CareerProfileView'
-import { HackathonsView } from './views/HackathonsView'
-import { OfficialDocumentsView } from './views/OfficialDocumentsView'
-import { AnalyticsView } from './views/AnalyticsView'
-import { ApprovalsView } from './views/ApprovalsView'
-import { SubmissionsReviewView } from './views/SubmissionsReviewView'
+import { Skeleton } from './components/ui'
+
+// Views are code-split so the initial download only contains the shell and the
+// active page; each module loads on first navigation.
+const DashboardView = lazy(() => import('./views/DashboardView').then((m) => ({ default: m.DashboardView })))
+const TasksView = lazy(() => import('./views/TasksView').then((m) => ({ default: m.TasksView })))
+const LeaderboardView = lazy(() => import('./views/LeaderboardView').then((m) => ({ default: m.LeaderboardView })))
+const TeamsView = lazy(() => import('./views/TeamsView').then((m) => ({ default: m.TeamsView })))
+const AnnouncementsView = lazy(() => import('./views/AnnouncementsView').then((m) => ({ default: m.AnnouncementsView })))
+const ActivityLogsView = lazy(() => import('./views/ActivityLogsView').then((m) => ({ default: m.ActivityLogsView })))
+const CareerProfileView = lazy(() => import('./views/CareerProfileView').then((m) => ({ default: m.CareerProfileView })))
+const HackathonsView = lazy(() => import('./views/HackathonsView').then((m) => ({ default: m.HackathonsView })))
+const OfficialDocumentsView = lazy(() => import('./views/OfficialDocumentsView').then((m) => ({ default: m.OfficialDocumentsView })))
+const AnalyticsView = lazy(() => import('./views/AnalyticsView').then((m) => ({ default: m.AnalyticsView })))
+const ApprovalsView = lazy(() => import('./views/ApprovalsView').then((m) => ({ default: m.ApprovalsView })))
+const SubmissionsReviewView = lazy(() => import('./views/SubmissionsReviewView').then((m) => ({ default: m.SubmissionsReviewView })))
+const UserManagementView = lazy(() => import('./views/UserManagementView').then((m) => ({ default: m.UserManagementView })))
+
+const ViewFallback: React.FC = () => (
+  <div aria-busy="true" aria-label="Loading page" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Skeleton height="36px" width="40%" />
+    <Skeleton height="120px" />
+    <Skeleton height="240px" />
+  </div>
+)
 
 const AuthenticatedApp: React.FC = () => {
   const { user, roleName, logout, switchDemoUser } = useAuth()
   const [activeNav, setActiveNav] = useState<string>('dashboard')
+  // Re-selecting the current page remounts it so its data is fetched fresh
+  const [viewVersion, setViewVersion] = useState<number>(0)
+  const navigate = (id: string) => {
+    if (id === activeNav) setViewVersion((v) => v + 1)
+    else setActiveNav(id)
+  }
 
   const handleRoleSwitch = async (email: string) => {
     try {
@@ -74,6 +93,11 @@ const AuthenticatedApp: React.FC = () => {
           title: 'Multi-Level Approvals & Governance',
           subtitle: 'Sequential verification: Stage 1 Lead Review → Stage 2 Executive Sign-off'
         }
+      case 'users':
+        return {
+          title: 'Members & Roles',
+          subtitle: 'Registration approvals, role assignments, and announcement permissions'
+        }
       case 'teams':
         return {
           title: 'Teams & Groups Architecture',
@@ -112,7 +136,7 @@ const AuthenticatedApp: React.FC = () => {
   return (
     <AppShell
       activeNav={activeNav}
-      onNavigate={(id) => setActiveNav(id)}
+      onNavigate={navigate}
       title={title}
       subtitle={subtitle}
       user={currentUserData}
@@ -120,6 +144,8 @@ const AuthenticatedApp: React.FC = () => {
       onRoleSwitch={handleRoleSwitch}
     >
       {/* Primary View Routing */}
+      <Suspense fallback={<ViewFallback />}>
+      <React.Fragment key={`${activeNav}-${viewVersion}`}>
       {activeNav === 'dashboard' && (
         <DashboardView
           onNavigateToTasks={() => setActiveNav('tasks')}
@@ -138,6 +164,9 @@ const AuthenticatedApp: React.FC = () => {
       {activeNav === 'teams' && <TeamsView />}
       {activeNav === 'announcements' && <AnnouncementsView />}
       {activeNav === 'activity' && <ActivityLogsView />}
+      {activeNav === 'users' && <UserManagementView />}
+      </React.Fragment>
+      </Suspense>
     </AppShell>
   )
 }
@@ -163,7 +192,7 @@ const AppRoot: React.FC = () => {
             width: '40px',
             height: '40px',
             borderRadius: '50%',
-            border: '3px solid rgba(37, 99, 235, 0.2)',
+            border: '3px solid rgba(var(--rgb-primary), 0.2)',
             borderTopColor: 'var(--color-primary)',
             animation: 'spin 0.8s linear infinite'
           }}

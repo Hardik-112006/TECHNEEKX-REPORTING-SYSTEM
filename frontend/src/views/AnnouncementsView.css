@@ -107,7 +107,7 @@
 }
 
 .announcements-filter-select option {
-  background-color: var(--color-surface, #181926);
+  background-color: var(--color-surface);
   color: var(--color-text-main, #f8fafc);
   padding: 8px 12px;
 }
@@ -118,8 +118,8 @@
 }
 
 [data-theme="dark"] .announcements-filter-select option {
-  background-color: #151624;
-  color: #f8fafc;
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-main);
 }
 
 .announcements-stats-pill {
@@ -229,13 +229,13 @@
 }
 
 .attachment-pill-btn.file-pill {
-  background-color: var(--color-primary-bg);
+  background-color: var(--color-primary-light);
   border-color: var(--color-primary-border);
-  color: var(--color-primary-hover);
+  color: var(--color-primary);
 }
 
 .attachment-pill-btn.file-pill:hover {
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-solid);
   color: #ffffff;
 }
 

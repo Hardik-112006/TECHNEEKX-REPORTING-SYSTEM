@@ -66,6 +66,14 @@ class Review(models.Model):
         indexes = [
             models.Index(fields=['task', '-reviewed_at'], name='idx_reviews_task_reviewed_at'),
         ]
+        constraints = [
+            # Database-level guarantee that a task is approved (and its points awarded) at most once
+            models.UniqueConstraint(
+                fields=['task'],
+                condition=models.Q(decision='Approved'),
+                name='uniq_approved_review_per_task',
+            ),
+        ]
         ordering = ['-reviewed_at']
 
     def __str__(self):

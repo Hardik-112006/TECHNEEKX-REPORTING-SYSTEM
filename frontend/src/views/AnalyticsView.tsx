@@ -310,7 +310,7 @@ export const AnalyticsView: React.FC = () => {
                   <span>Tasks Created</span>
                 </div>
                 <div className="legend-item">
-                  <div className="legend-dot" style={{ background: '#10b981' }} />
+                  <div className="legend-dot" style={{ background: 'var(--color-success)' }} />
                   <span>Approved</span>
                 </div>
               </div>
@@ -356,7 +356,7 @@ export const AnalyticsView: React.FC = () => {
             <div className="aging-distribution">
               <div className="aging-row">
                 <div className="aging-label">
-                  <div className="aging-dot" style={{ background: '#10b981' }} />
+                  <div className="aging-dot" style={{ background: 'var(--color-success)' }} />
                   <span>&lt; 24h (Fresh)</span>
                 </div>
                 <Badge variant="success">{pending?.under_24h || 0}</Badge>
@@ -364,7 +364,7 @@ export const AnalyticsView: React.FC = () => {
 
               <div className="aging-row">
                 <div className="aging-label">
-                  <div className="aging-dot" style={{ background: '#f59e0b' }} />
+                  <div className="aging-dot" style={{ background: 'var(--color-warning)' }} />
                   <span>24h – 48h (Delayed)</span>
                 </div>
                 <Badge variant="warning">{pending?.from_24_to_48h || 0}</Badge>
@@ -372,7 +372,7 @@ export const AnalyticsView: React.FC = () => {
 
               <div className="aging-row">
                 <div className="aging-label">
-                  <div className="aging-dot" style={{ background: '#ef4444' }} />
+                  <div className="aging-dot" style={{ background: 'var(--color-danger-solid)' }} />
                   <span>&gt; 48h (Escalation Required)</span>
                 </div>
                 <Badge variant="danger">{pending?.over_48h || 0}</Badge>

@@ -32,7 +32,7 @@
 
 .input-wrapper:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .input-control {

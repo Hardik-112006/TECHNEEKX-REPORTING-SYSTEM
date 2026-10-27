@@ -33,6 +33,8 @@ class User(AbstractBaseUser):
     status = models.CharField(max_length=20, default='Active', choices=STATUS_CHOICES)
     position = models.CharField(max_length=120, null=True, blank=True)
     is_demo = models.BooleanField(default=False, db_index=True)
+    # Lets a non-Official (e.g. a designated Core Lead) publish community announcements
+    can_post_announcements = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now, db_column='created_at')
 
     # Exclude last_login since it is not part of the source SQL schema

@@ -1,0 +1,141 @@
+.user-mgmt-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.user-mgmt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.user-mgmt-title {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--color-text-main);
+  letter-spacing: -0.02em;
+}
+
+.user-mgmt-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+  max-width: 640px;
+}
+
+.user-mgmt-pending-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  font-size: var(--font-body);
+  text-align: left;
+  transition: border-color var(--transition-fast);
+}
+
+.user-mgmt-pending-banner:hover {
+  border-color: var(--color-warning);
+}
+
+.user-mgmt-pending-cta {
+  margin-left: auto;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.user-mgmt-filters {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.user-mgmt-search {
+  position: relative;
+  flex: 1 1 260px;
+}
+
+.user-mgmt-search .input-control,
+.user-mgmt-search input {
+  padding-left: 36px;
+}
+
+.user-mgmt-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.user-mgmt-filters > .select-wrapper,
+.user-mgmt-filters > div:last-child {
+  flex: 0 1 200px;
+}
+
+.user-mgmt-skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.user-mgmt-identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-mgmt-name {
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.user-mgmt-email {
+  font-size: var(--font-label);
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.user-mgmt-readonly {
+  font-size: var(--font-table);
+  color: var(--color-text-secondary);
+}
+
+.user-mgmt-table-wrap td .select-wrapper,
+.user-mgmt-table-wrap td select {
+  min-width: 170px;
+}
+
+.user-mgmt-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-table);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.user-mgmt-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary-solid);
+  cursor: pointer;
+}
+
+.user-mgmt-toggle input:disabled,
+.user-mgmt-toggle input:disabled ~ span {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from apps.tasks.models import Task
+from apps.tasks.views import scope_tasks_for_user
 from apps.teams.models import Team, Group
 from apps.accounts.models import User
 from apps.announcements.models import Announcement
@@ -43,21 +44,7 @@ class GlobalSearchView(APIView):
         }
 
         # 1. TASKS SEARCH (Role-authorized)
-        task_qs = Task.objects.select_related('assigned_to', 'team').all()
-        if is_official(user) or is_board(user):
-            pass
-        elif is_core_team(user):
-            q_filter = Q(created_by=user) | Q(assigned_to=user)
-            if user.group_id:
-                q_filter |= Q(group_id=user.group_id)
-            if user.team_id:
-                q_filter |= Q(team_id=user.team_id)
-            task_qs = task_qs.filter(q_filter)
-        else:
-            q_filter = Q(assigned_to=user)
-            if user.group_id:
-                q_filter |= Q(group_id=user.group_id)
-            task_qs = task_qs.filter(q_filter)
+        task_qs = scope_tasks_for_user(Task.objects.select_related('assigned_to', 'team'), user)
 
         task_matches = task_qs.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
