@@ -46,6 +46,7 @@ export interface UserSummary {
   name: string
   email: string
   role?: Role | null
+  role_id?: number | null
   role_name?: string
   team_id?: number | null
   team_name?: string | null
@@ -56,6 +57,7 @@ export interface UserSummary {
   role_tier?: number
   hierarchy_level?: number
   category?: 'Founder' | 'Officials' | 'Director of Core Operations' | 'Core Leads' | 'Members' | 'Official Team' | 'Board' | 'Core Team' | string
+  can_post_announcements?: boolean
 }
 
 export interface UserDetail extends UserSummary {
@@ -110,6 +112,7 @@ export interface TaskProof {
   screenshots?: string
   description?: string
   submitted_at: string
+  task_points?: number
 }
 
 export interface Review {
@@ -123,6 +126,16 @@ export interface Review {
   reviewed_at: string
 }
 
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical'
+
+export interface TaskProgressNote {
+  note_id: number
+  author_name: string
+  note: string
+  task_status: TaskStatus
+  created_at: string
+}
+
 export interface Task {
   task_id: number
   title: string
@@ -131,16 +144,19 @@ export interface Task {
   deadline_display?: string
   is_overdue?: boolean
   assigned_to?: UserSummary | null
-  team?: TeamSummary | null
+  team?: number | null
+  team_id?: number | null
   team_name?: string | null
   group?: number | null
+  group_id?: number | null
   group_name?: string | null
   parent_task?: number | null
   parent_task_title?: string | null
   subtasks_count?: number
   created_by: UserSummary
   status: TaskStatus
-  priority?: 'Low' | 'Medium' | 'High' | 'Critical' | string
+  priority?: TaskPriority
+  points?: number
   created_at: string
   proof_count?: number
   proofs_count?: number
@@ -157,7 +173,8 @@ export interface TaskCreatePayload {
   team_id?: number | null
   group_id?: number | null
   parent_task_id?: number | null
-  priority?: string
+  priority?: TaskPriority
+  points?: number
 }
 
 export interface WarningAuditLog {

@@ -62,7 +62,7 @@ export const LeaderboardView: React.FC = () => {
           <div>
             <h2 className="leaderboard-heading">Community Performance Leaderboard</h2>
             <p className="leaderboard-subheading">
-              Points are awarded automatically upon task approval (+10 points per approved submission).
+              Points are awarded automatically when a submission is approved; each task carries its own points value.
             </p>
           </div>
         </div>

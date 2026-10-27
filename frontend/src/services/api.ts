@@ -46,7 +46,8 @@ import type {
   RemovalReview,
   BoardMonitoringMetrics,
   SearchResults,
-  LiveEtaResponse
+  LiveEtaResponse,
+  TaskProgressNote
 } from '../types/api'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '')
@@ -304,7 +305,11 @@ export const tasksApi = {
       description: data.description,
       deadline: data.deadline,
       assigned_to_id: data.assigned_to_id ?? data.assigned_to ?? null,
-      team_id: data.team_id ?? data.team ?? null
+      team_id: data.team_id ?? data.team ?? null,
+      group_id: data.group_id ?? null,
+      parent_task_id: data.parent_task_id ?? null,
+      ...(data.priority ? { priority: data.priority } : {}),
+      ...(data.points ? { points: data.points } : {})
     }
     return request<Task>('/tasks/', {
       method: 'POST',
@@ -325,9 +330,21 @@ export const tasksApi = {
     })
   },
 
-  async startTask(taskId: number): Promise<Task> {
+  async startTask(taskId: number, note?: string): Promise<Task> {
     return request<Task>(`/tasks/${taskId}/start/`, {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify(note ? { note } : {})
+    })
+  },
+
+  async getProgressNotes(taskId: number): Promise<TaskProgressNote[]> {
+    return request<TaskProgressNote[]>(`/tasks/${taskId}/progress/`)
+  },
+
+  async addProgressNote(taskId: number, note: string): Promise<TaskProgressNote> {
+    return request<TaskProgressNote>(`/tasks/${taskId}/progress/`, {
+      method: 'POST',
+      body: JSON.stringify({ note })
     })
   },
 
@@ -460,6 +477,7 @@ export const usersApi = {
     status?: string
     search?: string
     page?: number
+    page_size?: number
   } = {}): Promise<PaginatedResponse<UserSummary>> {
     const query = new URLSearchParams()
     if (params.role_id) query.set('role_id', String(params.role_id))
@@ -467,6 +485,7 @@ export const usersApi = {
     if (params.status) query.set('status', params.status)
     if (params.search) query.set('search', params.search)
     if (params.page) query.set('page', String(params.page))
+    if (params.page_size) query.set('page_size', String(params.page_size))
     const queryString = query.toString()
     return request<PaginatedResponse<UserSummary>>(`/users/${queryString ? `?${queryString}` : ''}`)
   },
@@ -475,7 +494,14 @@ export const usersApi = {
     return request<UserDetail>(`/users/${userId}/`)
   },
 
-  async manageUser(userId: number, data: { role_id?: number; team_id?: number | null; status?: string }): Promise<{ message: string; user: UserDetail }> {
+  async manageUser(userId: number, data: {
+    role_id?: number
+    team_id?: number | null
+    group_id?: number | null
+    status?: string
+    position?: string | null
+    can_post_announcements?: boolean
+  }): Promise<{ message: string; user: UserDetail }> {
     return request<{ message: string; user: UserDetail }>(`/users/${userId}/manage/`, {
       method: 'PATCH',
       body: JSON.stringify(data)

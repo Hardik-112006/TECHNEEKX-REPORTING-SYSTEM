@@ -39,6 +39,8 @@ import { tasksApi, teamsApi, usersApi } from '../services/api'
 import type {
   Task,
   TaskProof,
+  TaskProgressNote,
+  TaskPriority,
   Review,
   TeamSummary,
   UserSummary,
@@ -69,7 +71,8 @@ export const TasksView: React.FC = () => {
   const [createAssignType, setCreateAssignType] = useState<'individual' | 'team'>('individual')
   const [createAssigneeId, setCreateAssigneeId] = useState<string>('')
   const [createTeamId, setCreateTeamId] = useState<string>('')
-  const [createPriority, setCreatePriority] = useState<string>('Medium')
+  const [createPriority, setCreatePriority] = useState<TaskPriority>('Medium')
+  const [createPoints, setCreatePoints] = useState<string>('10')
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
@@ -77,6 +80,9 @@ export const TasksView: React.FC = () => {
   const [inspectTask, setInspectTask] = useState<Task | null>(null)
   const [inspectProofs, setInspectProofs] = useState<TaskProof[]>([])
   const [inspectReviews, setInspectReviews] = useState<Review[]>([])
+  const [inspectNotes, setInspectNotes] = useState<TaskProgressNote[]>([])
+  const [newProgressNote, setNewProgressNote] = useState<string>('')
+  const [isPostingNote, setIsPostingNote] = useState<boolean>(false)
   const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false)
 
   // Member submission modal state
@@ -179,7 +185,8 @@ export const TasksView: React.FC = () => {
         deadline: deadlineIso,
         assigned_to: createAssignType === 'individual' ? Number(createAssigneeId) : null,
         team: createAssignType === 'team' ? Number(createTeamId) : null,
-        priority: createPriority
+        priority: createPriority,
+        points: Number(createPoints) || 10
       })
 
       setSuccessBanner(`Task '${createTitle}' was created successfully.`)
@@ -190,6 +197,8 @@ export const TasksView: React.FC = () => {
       setCreateDeadline('')
       setCreateAssigneeId('')
       setCreateTeamId('')
+      setCreatePriority('Medium')
+      setCreatePoints('10')
       loadTasks()
     } catch (err: any) {
       setCreateError(err?.message || 'Failed to create task.')
@@ -201,18 +210,37 @@ export const TasksView: React.FC = () => {
   // Open inspect task drawer
   const handleInspect = async (task: Task) => {
     setInspectTask(task)
+    setNewProgressNote('')
     setIsLoadingDetails(true)
     try {
-      const [proofs, reviews] = await Promise.all([
+      const [proofs, reviews, notes] = await Promise.all([
         tasksApi.getTaskSubmissions(task.task_id),
-        tasksApi.getTaskReviews(task.task_id)
+        tasksApi.getTaskReviews(task.task_id),
+        tasksApi.getProgressNotes(task.task_id)
       ])
       setInspectProofs(proofs || [])
       setInspectReviews(reviews || [])
+      setInspectNotes(notes || [])
     } catch (err) {
       console.error('Failed to load proofs/reviews', err)
     } finally {
       setIsLoadingDetails(false)
+    }
+  }
+
+  // Member Action: Post an interim progress note without changing status
+  const handlePostProgressNote = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inspectTask || !newProgressNote.trim()) return
+    setIsPostingNote(true)
+    try {
+      const note = await tasksApi.addProgressNote(inspectTask.task_id, newProgressNote.trim())
+      setInspectNotes((prev) => [note, ...prev])
+      setNewProgressNote('')
+    } catch (err: any) {
+      setError(err?.message || 'Could not post progress update.')
+    } finally {
+      setIsPostingNote(false)
     }
   }
 
@@ -314,10 +342,11 @@ export const TasksView: React.FC = () => {
   // Check if current user is assigned to a given task
   const isUserAssigned = (task: Task) => {
     if (!user) return false
-    return (
-      task.assigned_to?.user_id === user.user_id ||
-      (task.team && user.team_id === task.team.team_id)
-    )
+    // Mirrors the backend's is_task_assignee rule
+    if (task.assigned_to) return task.assigned_to.user_id === user.user_id
+    if (task.group_id) return user.group_id === task.group_id
+    if (task.team) return user.team_id === task.team
+    return false
   }
 
   // Check anti-self-review and inspection-only guard
@@ -487,7 +516,11 @@ export const TasksView: React.FC = () => {
                         <TableCell>
                           <div className="task-title-cell">
                             <span className="task-title-text">{task.title}</span>
-                            <span className="task-priority-tag">{task.priority}</span>
+                            {task.priority && (
+                              <span className={`task-priority-tag priority-${task.priority.toLowerCase()}`}>
+                                {task.priority} · {task.points ?? 10} pts
+                              </span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -495,9 +528,9 @@ export const TasksView: React.FC = () => {
                             <span className="allocation-pill user">
                               <UserIcon size={12} /> {task.assigned_to.name}
                             </span>
-                          ) : task.team ? (
+                          ) : task.team_name || task.group_name ? (
                             <span className="allocation-pill team">
-                              <UsersIcon size={12} /> {task.team.name}
+                              <UsersIcon size={12} /> {task.group_name || task.team_name}
                             </span>
                           ) : (
                             <span className="text-muted">Unassigned</span>
@@ -627,13 +660,23 @@ export const TasksView: React.FC = () => {
             <Select
               label="Priority Level"
               value={createPriority}
-              onChange={(e) => setCreatePriority(e.target.value)}
+              onChange={(e) => setCreatePriority(e.target.value as TaskPriority)}
             >
               <option value="Low">Low</option>
               <option value="Medium">Medium</option>
               <option value="High">High</option>
               <option value="Critical">Critical</option>
             </Select>
+
+            <Input
+              type="number"
+              label="Points on Approval"
+              min={1}
+              max={100}
+              value={createPoints}
+              onChange={(e) => setCreatePoints(e.target.value)}
+              helperText="Awarded once to the submitter (1–100)."
+            />
           </div>
 
           <div className="assignment-type-group">
@@ -782,7 +825,7 @@ export const TasksView: React.FC = () => {
                 onClick={() => setReviewDecision('Approved')}
               >
                 <CheckCircle size={18} />
-                <span>Approve (+10 Pts)</span>
+                <span>Approve (+{tasks.find((t) => t.task_id === reviewTaskId)?.points ?? 10} Pts)</span>
               </button>
               <button
                 type="button"
@@ -834,7 +877,7 @@ export const TasksView: React.FC = () => {
           <div className="inspect-drawer-content">
             <div className="inspect-meta-banner">
               <Badge status={inspectTask.status as TaskStatus}>{inspectTask.status}</Badge>
-              <span className="inspect-priority">Priority: {inspectTask.priority}</span>
+              <span className="inspect-priority">Priority: {inspectTask.priority} · {inspectTask.points ?? 10} pts</span>
               <span className="inspect-deadline">
                 Deadline: {inspectTask.deadline_display || new Date(inspectTask.deadline).toLocaleDateString()}
               </span>
@@ -852,8 +895,8 @@ export const TasksView: React.FC = () => {
               <p>
                 {inspectTask.assigned_to
                   ? `Assigned to: ${inspectTask.assigned_to.name} (${inspectTask.assigned_to.email})`
-                  : inspectTask.team
-                  ? `Assigned to Team: ${inspectTask.team.name}`
+                  : inspectTask.group_name || inspectTask.team_name
+                  ? `Assigned to: ${inspectTask.group_name || inspectTask.team_name}`
                   : 'Unassigned'}
               </p>
               <p className="text-muted">
@@ -889,9 +932,11 @@ export const TasksView: React.FC = () => {
                       {proof.screenshots && (
                         <p className="proof-link">
                           <strong>Screenshots: </strong>
-                          <a href={proof.screenshots} target="_blank" rel="noopener noreferrer">
-                            {proof.screenshots} <ExternalLink size={12} />
-                          </a>
+                          {proof.screenshots.split(',').map((url) => url.trim()).filter(Boolean).map((url) => (
+                            <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                              {url} <ExternalLink size={12} />
+                            </a>
+                          ))}
                         </p>
                       )}
                       {proof.description && (
@@ -900,6 +945,43 @@ export const TasksView: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {/* Progress Updates Section */}
+            <div className="inspect-section">
+              <h4>Progress Updates ({inspectNotes.length})</h4>
+              {isUserAssigned(inspectTask) && inspectTask.status !== 'Approved' && (
+                <form className="progress-note-form" onSubmit={handlePostProgressNote}>
+                  <Textarea
+                    label="Share an update with your lead"
+                    placeholder="What did you finish? Anything blocking you?"
+                    value={newProgressNote}
+                    onChange={(e) => setNewProgressNote(e.target.value)}
+                    rows={2}
+                    maxLength={1000}
+                  />
+                  <Button type="submit" variant="outline" size="sm" isLoading={isPostingNote} disabled={!newProgressNote.trim()}>
+                    Post Update
+                  </Button>
+                </form>
+              )}
+              {isLoadingDetails ? (
+                <Skeleton height="48px" />
+              ) : inspectNotes.length === 0 ? (
+                <p className="text-muted">No progress updates yet.</p>
+              ) : (
+                <ul className="progress-notes-list">
+                  {inspectNotes.map((n) => (
+                    <li key={n.note_id} className="progress-note-item">
+                      <div className="progress-note-meta">
+                        <span className="progress-note-author">{n.author_name}</span>
+                        <span>{new Date(n.created_at).toLocaleString()}</span>
+                      </div>
+                      <p className="progress-note-text">{n.note}</p>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
 
