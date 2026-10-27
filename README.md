@@ -11,6 +11,8 @@ TechNeekX Community Reporting System provides a transparent, auditable platform 
 1. **Role-Based Identity & Security (SimpleJWT)**:
    - Full 12-role community hierarchy organized into 5 strict authorization tiers.
    - Public registration defaults safely to `Member` (Tier 5); privilege escalation attempts are strictly rejected.
+   - Privileged sign-ups (Official, Core Lead, Director) stay `Pending` until approved in **Members & Roles**. Founder self-registration is disabled unless `FOUNDER_SETUP_KEY` is configured on the server.
+   - Role changes follow the hierarchy: nobody edits their own role, and only the Founder may grant a role equal to or above their own.
    - JWT tokens (`access` and `refresh`) with silent automatic renewal on token expiry.
 2. **Hierarchical Teams & Groups**:
    - Parent-team and sub-team relationships with specialized working groups.
@@ -18,19 +20,22 @@ TechNeekX Community Reporting System provides a transparent, auditable platform 
 3. **Structured Task Workflow State Machine**:
    - Explicit dual assignment: individual community member, entire team, or both (with membership validation).
    - Validated status transitions:
-     - `Assigned` → `In Progress` → `Submitted` → `Approved` (completes task, awards +10 pts).
+     - `Assigned` → `In Progress` → `Submitted` → `Approved` (completes task, awards the task's points).
      - `Submitted` → `Changes Requested` (requires mandatory feedback) → `Submitted` (corrected proof).
    - Arbitrary client-side status shifts and invalid state reversions are strictly rejected.
+   - Each task carries a priority (`Low`/`Medium`/`High`/`Critical`) and a points value (1–100, default 10).
+   - Assignees can post **progress notes** before submitting, so leads see work in flight.
 4. **Verifiable Deliverable Proofs & Anti-Self-Review**:
    - Proof submissions support GitHub pull request URLs, screenshot links, and technical implementation notes.
    - **Anti-Self-Review Enforced**: Submitting members and assigned users are strictly forbidden from reviewing their own work (HTTP 403 Forbidden).
-5. **Transactional Idempotent Scoring (+10 Pts)**:
-   - Exactly 10 points awarded per approved task to the submitter.
-   - Row-level database locks (`select_for_update()`) and approval record guards prevent duplicate points even under concurrent requests.
+   - Only the assignee (or a member of the assigned group/team) can submit evidence; leaders cannot submit on someone's behalf.
+5. **Transactional Idempotent Scoring**:
+   - The task's points are awarded once to the submitter on approval.
+   - The task row is locked and re-checked inside the review transaction, and a partial unique constraint allows at most one approved review per task, so concurrent reviewers get HTTP 409 instead of duplicate points.
 6. **Live Community Leaderboard**:
    - Real-time performance standings sorted by points descending, completed task counts, and rank badges.
 7. **Official Announcements & Immutable Audit History**:
-   - Authorized leads broadcast community bulletins.
+   - Officials publish community bulletins; any other user can be granted the `can_post_announcements` permission from **Members & Roles**.
    - All state shifts, reviews, logins, and point grants are recorded in `history_logs`.
 
 ---
@@ -75,7 +80,7 @@ TECHNEEKX REPORTING SYSTEM/
         ├── types/api.ts                       # Typed TypeScript models and DTOs
         ├── services/api.ts                    # Axios/Fetch client with JWT auto-refresh
         ├── context/AuthContext.tsx            # Global auth state and demo persona switcher
-        ├── styles/tokens.css                  # Violet SaaS design token custom properties
+        ├── styles/tokens.css                  # Black & red design tokens (WCAG AA in dark and light themes)
         ├── components/
         │   ├── ui/                            # 13 reusable accessible component primitives
         │   └── layout/                        # Sidebar, TopBar, and responsive AppShell
@@ -105,6 +110,10 @@ Copy-Item .env.example .env
 | `JWT_REFRESH_TOKEN_LIFETIME_DAYS` | `7` | JWT refresh token lifespan |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed frontend origins |
 | `VITE_API_BASE_URL` | `http://127.0.0.1:8000/api` | Base URL for frontend API client |
+| `USE_SQLITE` | `True` | Use the bundled SQLite database; set `False` for PostgreSQL |
+| `FOUNDER_SETUP_KEY` | *(empty)* | Enables Founder self-registration when set; keep it long and random |
+| `DIRECTOR_SETUP_KEY` | *(empty)* | Lets a Director registration activate immediately; otherwise it stays Pending |
+| `VITE_TECHNEEKX_SITE_URL` / `VITE_FS_SITE_URL` | *(empty)* | External website links shown in the sidebar (hidden when empty) |
 
 > [!CAUTION]
 > Never commit actual passwords, private keys, or `.env` files to source control. `.env` is strictly protected in `.gitignore`.
@@ -169,12 +178,13 @@ Use the discreet **Persona Switcher** dropdown in the top header or the login ti
 
 ## 🧪 Running Automated Tests
 
-### 1. Backend Django Test Suite (20 Tests)
-Exercises authentication, registration privilege escalation prevention, permissions matrix, task lifecycle state machine, anti-self-review guards, and idempotent scoring:
+### 1. Backend Django Test Suite (68 Tests)
+Exercises authentication, registration privilege escalation prevention, permissions matrix, task lifecycle state machine, anti-self-review guards, idempotent scoring, and the security hardening regressions in `tests/test_security_hardening.py`:
 ```powershell
-python backend\manage.py test tests
+cd backend
+python manage.py test tests
 ```
-*Result: 20 passed (0 failures, 0 errors, 0 silenced).*
+*Result: 68 passed (0 failures, 0 errors).*
 
 ### 2. Frontend Integration & Boundary Test Suite (20 Tests)
 Exercises authentic JWT token retrieval, API security boundaries, correction-resubmission cycles, duplicate review prevention, leaderboard updates, and audit trail records against the live backend:
@@ -185,7 +195,7 @@ npm --prefix frontend test
 
 ### 3. Frontend Static Analysis & Type Checking
 ```powershell
-# Oxlint static analysis (0 warnings, 0 errors)
+# Oxlint static analysis (0 errors)
 npm --prefix frontend run lint
 
 # TypeScript strict type-check & Vite production bundle build
