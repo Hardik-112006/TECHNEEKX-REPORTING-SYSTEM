@@ -3,6 +3,7 @@ from django.utils import timezone
 from apps.scoring.models import Performance
 from apps.activity.services import log_activity
 
+# Fallback for legacy tasks without a points value
 POINTS_PER_TASK_APPROVAL = 10
 
 def award_task_points(task, submitter, reviewer) -> tuple[bool, int, str]:
@@ -24,8 +25,8 @@ def award_task_points(task, submitter, reviewer) -> tuple[bool, int, str]:
             defaults={'points': 0, 'rank': None, 'updated_at': timezone.now()}
         )
 
-        old_points = perf.points
-        perf.points += POINTS_PER_TASK_APPROVAL
+        awarded = task.points or POINTS_PER_TASK_APPROVAL
+        perf.points += awarded
         perf.updated_at = timezone.now()
         perf.save()
 
@@ -36,10 +37,10 @@ def award_task_points(task, submitter, reviewer) -> tuple[bool, int, str]:
         log_activity(
             user=reviewer,
             action='POINTS_AWARDED',
-            details=f"Awarded {POINTS_PER_TASK_APPROVAL} pts to {submitter.name} for Task #{task.task_id} (New total: {perf.points})"
+            details=f"Awarded {awarded} pts to {submitter.name} for Task #{task.task_id} (New total: {perf.points})"
         )
 
-        return True, POINTS_PER_TASK_APPROVAL, f"Successfully awarded {POINTS_PER_TASK_APPROVAL} points to {submitter.name}."
+        return True, awarded, f"Successfully awarded {awarded} points to {submitter.name}."
 
 def recalculate_leaderboard_ranks():
     """

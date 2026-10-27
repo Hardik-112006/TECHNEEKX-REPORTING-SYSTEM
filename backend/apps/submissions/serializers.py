@@ -10,14 +10,15 @@ class TaskProofSerializer(serializers.ModelSerializer):
     submitted_by = UserSummarySerializer(read_only=True)
     task_title = serializers.CharField(source='task.title', read_only=True)
     task_status = serializers.CharField(source='task.status', read_only=True)
+    task_points = serializers.IntegerField(source='task.points', read_only=True)
 
     class Meta:
         model = TaskProof
         fields = [
-            'proof_id', 'task_id', 'task_title', 'task_status', 'submitted_by',
+            'proof_id', 'task_id', 'task_title', 'task_status', 'task_points', 'submitted_by',
             'github_link', 'screenshots', 'description', 'submitted_at'
         ]
-        read_only_fields = ['proof_id', 'task_id', 'task_title', 'task_status', 'submitted_by', 'submitted_at']
+        read_only_fields = ['proof_id', 'task_id', 'task_title', 'task_status', 'task_points', 'submitted_by', 'submitted_at']
 
 
 

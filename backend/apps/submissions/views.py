@@ -1,6 +1,6 @@
 from rest_framework import status, views, viewsets, permissions
 from rest_framework.response import Response
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 
 from apps.tasks.models import Task
@@ -11,9 +11,14 @@ from apps.submissions.serializers import (
     ReviewSerializer,
     ReviewCreateSerializer
 )
-from apps.accounts.permissions import user_has_tier, can_review_submissions, is_director_of_operations
+from apps.accounts.permissions import can_review_submissions, is_director_of_operations, is_task_assignee
 from apps.scoring.services import award_task_points
 from apps.activity.services import log_activity
+
+
+class ReviewConflict(Exception):
+    """Raised inside the review transaction when the task is no longer awaiting review."""
+
 
 class SubmitProofView(views.APIView):
     """
@@ -26,9 +31,9 @@ class SubmitProofView(views.APIView):
         task = get_object_or_404(Task, pk=task_id)
         user = request.user
 
-        # 1. Verify caller assignment authorization
-        is_assigned = (task.assigned_to_id == user.user_id) or (task.group_id and user.group_id == task.group_id and not task.assigned_to_id)
-        if not is_assigned and not user_has_tier(user, 2):
+        # 1. Only the responsible assignee may submit evidence. Leaders cannot submit on a
+        # member's behalf, since the submitter is the one credited with points on approval.
+        if not is_task_assignee(task, user):
             return Response(
                 {'error': 'You are not assigned to this task.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -122,41 +127,23 @@ class ReviewTaskView(views.APIView):
             decision = serializer.validated_data['decision']
             feedback = serializer.validated_data.get('feedback', '')
 
-            with transaction.atomic():
-                points_awarded = 0
-                points_message = ""
-                if decision == 'Approved':
-                    submitter = latest_proof.submitted_by if latest_proof else task.assigned_to
-                    if submitter:
-                        success, pts, points_message = award_task_points(task, submitter, reviewer)
-                        if success:
-                            points_awarded = pts
-
-                review = Review.objects.create(
-                    task=task,
-                    proof=latest_proof,
-                    reviewer=reviewer,
-                    decision=decision,
-                    feedback=feedback
+            try:
+                with transaction.atomic():
+                    # Lock the task and re-check its state inside the transaction so that
+                    # concurrent reviewers cannot both act on the same submission.
+                    task = Task.objects.select_for_update().get(pk=task.pk)
+                    if task.status != 'Submitted':
+                        raise ReviewConflict(task.status)
+                    latest_proof = task.proofs.order_by('-submitted_at').first()
+                    review, points_awarded, points_message = self._apply_decision(
+                        task, latest_proof, reviewer, decision, feedback
+                    )
+            except (ReviewConflict, IntegrityError):
+                task.refresh_from_db(fields=['status'])
+                return Response(
+                    {'error': f"This submission was already reviewed (current status: '{task.status}')."},
+                    status=status.HTTP_409_CONFLICT
                 )
-
-                task.status = decision
-                task.save(update_fields=['status'])
-
-                if decision == 'Approved':
-                    from apps.board.services import resolve_task_warnings
-                    resolve_task_warnings(task=task, actor=reviewer)
-                    log_activity(
-                        user=reviewer,
-                        action='TASK_APPROVED',
-                        details=f"Task #{task.task_id} approved by {reviewer.name}. Feedback: {feedback}"
-                    )
-                else:
-                    log_activity(
-                        user=reviewer,
-                        action='CHANGES_REQUESTED',
-                        details=f"Changes requested on Task #{task.task_id} by {reviewer.name}. Feedback: {feedback}"
-                    )
 
             return Response({
                 'message': f"Review completed with decision '{decision}'.",
@@ -166,6 +153,45 @@ class ReviewTaskView(views.APIView):
                 'scoring_info': points_message
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def _apply_decision(task, latest_proof, reviewer, decision, feedback):
+        """Records the review, awards points on approval, and advances the task status."""
+        points_awarded = 0
+        points_message = ""
+        if decision == 'Approved':
+            submitter = latest_proof.submitted_by if latest_proof else task.assigned_to
+            if submitter:
+                success, pts, points_message = award_task_points(task, submitter, reviewer)
+                if success:
+                    points_awarded = pts
+
+        review = Review.objects.create(
+            task=task,
+            proof=latest_proof,
+            reviewer=reviewer,
+            decision=decision,
+            feedback=feedback
+        )
+
+        task.status = decision
+        task.save(update_fields=['status'])
+
+        if decision == 'Approved':
+            from apps.board.services import resolve_task_warnings
+            resolve_task_warnings(task=task, actor=reviewer)
+            log_activity(
+                user=reviewer,
+                action='TASK_APPROVED',
+                details=f"Task #{task.task_id} approved by {reviewer.name}. Feedback: {feedback}"
+            )
+        else:
+            log_activity(
+                user=reviewer,
+                action='CHANGES_REQUESTED',
+                details=f"Changes requested on Task #{task.task_id} by {reviewer.name}. Feedback: {feedback}"
+            )
+        return review, points_awarded, points_message
 
 
 class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
