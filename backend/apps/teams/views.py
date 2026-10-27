@@ -18,6 +18,23 @@ from apps.accounts.permissions import (
     ReadOnlyOrExecutive
 )
 
+def team_roster_error(actor, team, target):
+    """
+    Officials manage any roster. Core Leads may only move Members in or out of their own
+    team. Everyone else (including the inspection-only Director) is refused.
+    """
+    from apps.accounts.permissions import is_official, is_core_team, MEMBER_ROLES
+    if is_official(actor):
+        return None
+    if not is_core_team(actor):
+        return "Only Officials and Core Leads can manage team rosters."
+    if actor.team_id != team.team_id:
+        return "Core Leads can only manage the roster of their own team."
+    if not target.role or target.role.name not in MEMBER_ROLES:
+        return "Core Leads can only add or remove Members."
+    return None
+
+
 class TeamViewSet(viewsets.ModelViewSet):
     """
     CRUD for Teams, with hierarchical parent-team nesting and member assignment.
@@ -65,7 +82,10 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = MemberActionSerializer(data=request.data)
         if serializer.is_valid():
             user_id = serializer.validated_data['user_id']
-            user = User.objects.get(user_id=user_id)
+            user = User.objects.select_related('role').get(user_id=user_id)
+            error = team_roster_error(request.user, team, user)
+            if error:
+                return Response({'error': error}, status=status.HTTP_403_FORBIDDEN)
             user.team = team
             user.save(update_fields=['team'])
             return Response({
@@ -81,7 +101,10 @@ class TeamViewSet(viewsets.ModelViewSet):
         serializer = MemberActionSerializer(data=request.data)
         if serializer.is_valid():
             user_id = serializer.validated_data['user_id']
-            user = User.objects.get(user_id=user_id)
+            user = User.objects.select_related('role').get(user_id=user_id)
+            error = team_roster_error(request.user, team, user)
+            if error:
+                return Response({'error': error}, status=status.HTTP_403_FORBIDDEN)
             if user.team_id != team.team_id:
                 return Response(
                     {'error': f"User '{user.name}' is not currently assigned to team '{team.name}'."},
