@@ -8,9 +8,9 @@
   position: relative;
   background-color: var(--color-bg-app);
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 65%),
-    radial-gradient(circle at 100% 100%, rgba(124, 58, 237, 0.08) 0%, transparent 55%),
-    radial-gradient(circle at 0% 100%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 50% 0%, rgba(var(--rgb-primary), 0.14) 0%, transparent 65%),
+    radial-gradient(circle at 100% 100%, rgba(var(--rgb-accent), 0.08) 0%, transparent 55%),
+    radial-gradient(circle at 0% 100%, rgba(var(--rgb-accent), 0.12) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -90,9 +90,9 @@
   width: 58px;
   height: 58px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(124, 58, 237, 0.25) 100%);
-  border: 1px solid rgba(37, 99, 235, 0.35);
-  box-shadow: 0 0 24px rgba(37, 99, 235, 0.25);
+  background: linear-gradient(135deg, rgba(var(--rgb-primary), 0.25) 0%, rgba(var(--rgb-accent), 0.25) 100%);
+  border: 1px solid rgba(var(--rgb-primary), 0.35);
+  box-shadow: 0 0 24px rgba(var(--rgb-primary), 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,7 +209,7 @@
 }
 
 .auth-form-select option {
-  background-color: var(--color-surface, #181926);
+  background-color: var(--color-surface);
   color: var(--color-text-main, #f8fafc);
   padding: 8px 12px;
 }
@@ -220,8 +220,8 @@
 }
 
 [data-theme="dark"] .auth-form-select option {
-  background-color: #151624;
-  color: #f8fafc;
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-main);
 }
 
 .auth-safeguard-box {
@@ -333,7 +333,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: var(--color-primary);
+  background: var(--color-primary-solid);
   color: #ffffff;
   border: none;
   border-radius: var(--radius-sm);
@@ -344,7 +344,7 @@
 }
 
 .auth-demo-retry-btn:hover {
-  background: var(--color-primary-hover, #1d4ed8);
+  background: var(--color-primary-hover);
 }
 
 .auth-demo-state-box.empty {
@@ -368,7 +368,7 @@
 .auth-demo-tile:hover {
   border-color: var(--color-primary-bright);
   background: var(--color-surface-hover);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--rgb-primary), 0.15);
   transform: translateY(-1px);
 }
 
@@ -398,8 +398,8 @@
 }
 
 .tier-1 { background: var(--color-primary-light); color: var(--color-primary-bright); border: 1px solid var(--color-primary-border); }
-.tier-2 { background: var(--color-violet-light); color: #A78BFA; border: 1px solid rgba(167, 139, 250, 0.3); }
-.tier-3 { background: var(--color-cyan-light); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.tier-2 { background: var(--color-violet-light); color: var(--color-violet); border: 1px solid var(--color-violet-border); }
+.tier-3 { background: var(--color-info-bg); color: var(--color-info-text); border: 1px solid var(--color-info-border); }
 .tier-4 { background: var(--color-warning-bg); color: var(--color-warning-text); border: 1px solid var(--color-warning-border); }
 .tier-5 { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success-border); }
 
@@ -422,7 +422,7 @@
   font-weight: 600;
   padding: 1px 5px;
   border-radius: 4px;
-  background: var(--color-surface, #1e2030);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   white-space: nowrap;

@@ -40,7 +40,7 @@
   border: 1px solid var(--color-primary-border);
 }
 .badge-primary .badge-dot {
-  background-color: var(--color-primary);
+  background-color: var(--color-primary-solid);
 }
 
 .badge-success {
@@ -77,6 +77,15 @@
 }
 .badge-info .badge-dot {
   background-color: var(--color-info);
+}
+
+.badge-violet {
+  background-color: var(--color-violet-light);
+  color: var(--color-violet);
+  border: 1px solid var(--color-violet-border);
+}
+.badge-violet .badge-dot {
+  background-color: var(--color-violet);
 }
 
 .badge-outline {

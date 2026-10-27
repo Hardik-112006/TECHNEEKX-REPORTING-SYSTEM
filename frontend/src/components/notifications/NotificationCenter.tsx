@@ -175,7 +175,7 @@ export const NotificationCenter: React.FC = () => {
           <div className="notif-list">
             {notifications.length === 0 ? (
               <div className="notif-empty">
-                <CheckCheck size={28} style={{ margin: '0 auto 8px', color: '#10b981' }} />
+                <CheckCheck size={28} style={{ margin: '0 auto 8px', color: 'var(--color-success-text)' }} />
                 <p>You're all caught up!</p>
                 <span className="text-xs text-secondary">
                   No pending reminders or active escalations.

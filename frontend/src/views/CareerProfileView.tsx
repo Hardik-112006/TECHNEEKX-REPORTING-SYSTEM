@@ -561,7 +561,7 @@ export const CareerProfileView: React.FC = () => {
                         {edu.grade && <span className="edu-grade">{edu.grade}</span>}
                         <Button
                           variant="ghost"
-                          style={{ color: '#EF4444', marginLeft: '0.5rem' }}
+                          style={{ color: 'var(--color-danger-text)', marginLeft: '0.5rem' }}
                           onClick={() => handleDeleteEducation(edu.id)}
                         >
                           🗑️
@@ -609,7 +609,7 @@ export const CareerProfileView: React.FC = () => {
                         )}
                         <Button
                           variant="ghost"
-                          style={{ color: '#EF4444' }}
+                          style={{ color: 'var(--color-danger-text)' }}
                           onClick={() => handleDeleteProject(proj.id)}
                         >
                           🗑️
@@ -677,7 +677,7 @@ export const CareerProfileView: React.FC = () => {
                       )}
                       <Button
                         variant="ghost"
-                        style={{ color: '#EF4444', marginLeft: '0.5rem' }}
+                        style={{ color: 'var(--color-danger-text)', marginLeft: '0.5rem' }}
                         onClick={() => handleDeleteAchievement(ach.id)}
                       >
                         🗑️
@@ -771,7 +771,7 @@ export const CareerProfileView: React.FC = () => {
                 />
               </div>
 
-              <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '1rem', color: '#111827' }}>
+              <h4 style={{ marginTop: '1.5rem', marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--color-text-main)' }}>
                 Resume Sections:
               </h4>
               <div className="resume-section-toggles">

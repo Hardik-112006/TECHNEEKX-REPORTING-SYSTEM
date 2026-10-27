@@ -47,13 +47,13 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ede6ff 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FF6B70 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 [data-theme="light"] .topbar-brand-text {
-  background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #0B0B0D 0%, #C8102E 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

@@ -3,7 +3,7 @@ import './Badge.css';
 
 export type TaskStatus = 'Assigned' | 'In Progress' | 'Submitted' | 'Approved' | 'Changes Requested';
 export type UserStatus = 'Active' | 'Inactive' | 'Pending';
-export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'outline';
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'violet' | 'outline';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -24,16 +24,19 @@ export const Badge: React.FC<BadgeProps> = ({
   let resolvedVariant = variant || 'default';
 
   if (status) {
+    // Semantic workflow colors from the style guide: Assigned blue, In Progress amber,
+    // Submitted violet, Approved green, Changes Requested / Overdue red.
     switch (status) {
-      case 'Pending':
-        resolvedVariant = 'warning';
+      case 'Assigned':
+        resolvedVariant = 'info';
         break;
+      case 'Pending':
       case 'In Progress':
-        resolvedVariant = 'primary';
+        resolvedVariant = 'warning';
         break;
       case 'Submitted':
       case 'Under Review':
-        resolvedVariant = 'info';
+        resolvedVariant = 'violet';
         break;
       case 'Approved':
       case 'Completed':
@@ -47,7 +50,6 @@ export const Badge: React.FC<BadgeProps> = ({
         break;
       case 'Cancelled':
       case 'Inactive':
-      case 'Assigned':
       default:
         resolvedVariant = 'default';
         break;

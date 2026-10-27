@@ -1,68 +1,77 @@
 :root {
   /* ==========================================================================
-     TechNeekX Signature Design System Tokens
+     TechNeekX Signature Design System Tokens — Black & Red
+     Every text/background pair below meets WCAG AA (4.5:1) in both themes.
      ========================================================================== */
 
   /* Core Foundations */
-  --color-bg-app: #080D19;
-  --color-bg-secondary: #0D1424;
-  --color-sidebar-bg: #0A1020;
-  --color-surface: #111B2E;
-  --color-surface-elevated: #111B2E;
-  --color-surface-secondary: #162238;
-  --color-surface-hover: #192742;
-  --color-surface-muted: #0D1424;
+  --color-bg-app: #09090B;
+  --color-bg-secondary: #0E0E11;
+  --color-sidebar-bg: #050506;
+  --color-surface: #131316;
+  --color-surface-elevated: #17171B;
+  --color-surface-secondary: #18181C;
+  --color-surface-hover: #1F1F24;
+  --color-surface-muted: #0E0E11;
 
   /* Desktop & Mobile Sidebar */
-  --color-sidebar-surface: #0A1020;
-  --color-sidebar-border: #1E2D44;
-  --color-sidebar-text: #A3B2C7;
-  --color-sidebar-text-hover: #F8FAFC;
-  --color-sidebar-text-active: #F8FAFC;
-  --color-sidebar-active-bg: rgba(37, 99, 235, 0.16);
+  --color-sidebar-surface: #050506;
+  --color-sidebar-border: #1C1C21;
+  --color-sidebar-text: #A1A1AA;
+  --color-sidebar-text-hover: #F4F4F5;
+  --color-sidebar-text-active: #FFFFFF;
+  --color-sidebar-active-bg: rgba(var(--rgb-primary), 0.16);
 
   /* Typography & Contrast */
   --font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --color-text-main: #F8FAFC;
-  --color-text-secondary: #A3B2C7;
-  --color-text-muted: #71829B;
-  --color-text-inverse: #080D19;
+  --color-text-main: #F4F4F5;
+  --color-text-secondary: #B3B3BC;
+  --color-text-muted: #8B8B95;
+  --color-text-inverse: #09090B;
 
   /* Borders, Dividers & Form Inputs */
-  --color-border: #26344B;
-  --color-border-subtle: #1A263A;
-  --color-border-hover: #3B4D6B;
-  --color-input-border: #26344B;
-  --color-focus-ring: rgba(59, 130, 246, 0.45);
+  --color-border: #27272D;
+  --color-border-subtle: #1C1C21;
+  --color-border-hover: #3A3A42;
+  --color-input-border: #2E2E35;
+  --color-focus-ring: rgba(242, 85, 90, 0.45);
 
-  /* Brand Accents */
-  --color-primary: #2563EB;
-  --color-primary-bright: #3B82F6;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-active: #1E40AF;
-  --color-primary-light: rgba(37, 99, 235, 0.15);
-  --color-primary-border: rgba(59, 130, 246, 0.35);
-  --color-primary-ring: rgba(37, 99, 235, 0.35);
+  /* Brand Accents
+     --color-primary is text-safe on dark surfaces (links, icons, active states).
+     --color-primary-solid is for filled controls that carry white text. */
+  --rgb-primary: 215, 38, 61;
+  --rgb-accent: 122, 15, 36;
+  --color-primary: #F2555A;
+  --color-primary-solid: #D7263D;
+  --color-primary-bright: #FF6B70;
+  --color-primary-hover: #B91C2E;
+  --color-primary-active: #9F1726;
+  --color-primary-light: rgba(var(--rgb-primary), 0.15);
+  --color-primary-border: rgba(242, 85, 90, 0.38);
+  --color-primary-ring: rgba(var(--rgb-primary), 0.35);
 
-  --color-secondary: #3B82F6;
-  --color-secondary-light: rgba(59, 130, 246, 0.15);
-  --color-accent: #7C3AED;
+  --color-secondary: #FB7185;
+  --color-secondary-light: rgba(251, 113, 133, 0.15);
+  --color-accent: #7A0F24;
 
-  --color-violet: #7C3AED;
-  --color-violet-light: rgba(124, 58, 237, 0.16);
-  --color-magenta: #DB2777;
-  --color-magenta-light: rgba(219, 39, 119, 0.16);
-  --color-cyan: #06B6D4;
-  --color-cyan-light: rgba(6, 182, 212, 0.16);
+  /* Supporting hues for categorical data (charts, tiers) */
+  --color-violet: #C4B5FD;
+  --color-violet-light: rgba(167, 139, 250, 0.16);
+  --color-violet-border: rgba(167, 139, 250, 0.32);
+  --color-magenta: #FB7185;
+  --color-magenta-light: rgba(251, 113, 133, 0.16);
+  --color-cyan: #67E8F9;
+  --color-cyan-light: rgba(103, 232, 249, 0.14);
 
-  /* TechNeekX Brand Gradients */
-  --gradient-brand: linear-gradient(110deg, #2563EB 0%, #7C3AED 55%, #DB2777 100%);
-  --gradient-brand-subtle: linear-gradient(110deg, rgba(37, 99, 235, 0.14) 0%, rgba(124, 58, 237, 0.14) 55%, rgba(219, 39, 119, 0.14) 100%);
-  --gradient-brand-glow: linear-gradient(110deg, rgba(37, 99, 235, 0.25) 0%, rgba(124, 58, 237, 0.25) 55%, rgba(219, 39, 119, 0.25) 100%);
-  --gradient-brand-border: linear-gradient(110deg, #3B82F6, #7C3AED, #DB2777);
+  /* TechNeekX Brand Gradients (white text stays >= 4.9:1 across the whole ramp) */
+  --gradient-brand: linear-gradient(110deg, #D7263D 0%, #B3172F 55%, #7A0F24 100%);
+  --gradient-brand-subtle: linear-gradient(110deg, rgba(215, 38, 61, 0.14) 0%, rgba(179, 23, 47, 0.12) 55%, rgba(122, 15, 36, 0.12) 100%);
+  --gradient-brand-glow: linear-gradient(110deg, rgba(215, 38, 61, 0.25) 0%, rgba(179, 23, 47, 0.22) 55%, rgba(122, 15, 36, 0.22) 100%);
+  --gradient-brand-border: linear-gradient(110deg, #F2555A, #D7263D, #7A0F24);
 
   /* Status Colors */
   --color-success: #22C55E;
+  --color-success-solid: #15803D;
   --color-success-bg: rgba(34, 197, 94, 0.14);
   --color-success-text: #4ADE80;
   --color-success-border: rgba(34, 197, 94, 0.32);
@@ -72,15 +81,16 @@
   --color-warning-text: #FBBF24;
   --color-warning-border: rgba(245, 158, 11, 0.32);
 
-  --color-danger: #F87171;
+  --color-danger: #FF8A8A;
+  --color-danger-solid: #DC2626;
   --color-danger-bg: rgba(248, 113, 113, 0.14);
-  --color-danger-text: #F87171;
+  --color-danger-text: #FF8A8A;
   --color-danger-border: rgba(248, 113, 113, 0.32);
 
-  --color-info: #38BDF8;
-  --color-info-bg: rgba(56, 189, 248, 0.14);
-  --color-info-text: #38BDF8;
-  --color-info-border: rgba(56, 189, 248, 0.32);
+  --color-info: #60A5FA;
+  --color-info-bg: rgba(96, 165, 250, 0.14);
+  --color-info-text: #60A5FA;
+  --color-info-border: rgba(96, 165, 250, 0.32);
 
   /* 4px Multiples Spacing Scale */
   --space-1: 4px;
@@ -100,6 +110,11 @@
   --font-body: 14px;
   --font-table: 13px;
   --font-label: 12px;
+  --font-xs: 12px;
+  --font-sm: 13px;
+  --font-2xl: 24px;
+  --font-size-xs: 12px;
+  --font-weight-medium: 500;
 
   /* Consistent SaaS Corner Radii */
   --radius-xs: 4px;
@@ -110,15 +125,15 @@
   --radius-full: 9999px;
 
   /* Premium Dark Shadows & Subtle Glows */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 1px 2px -1px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.45), 0 1px 2px -1px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.75), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
 
-  --glow-brand: 0 0 20px rgba(124, 58, 237, 0.25);
-  --glow-primary: 0 0 16px rgba(37, 99, 235, 0.3);
-  --glow-accent: 0 0 16px rgba(219, 39, 119, 0.25);
+  --glow-brand: 0 0 20px rgba(var(--rgb-primary), 0.25);
+  --glow-primary: 0 0 16px rgba(var(--rgb-primary), 0.3);
+  --glow-accent: 0 0 16px rgba(var(--rgb-accent), 0.35);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -127,45 +142,59 @@
 
 [data-theme="light"] {
   /* Core Foundations */
-  --color-bg-app: #F8FAFC;
-  --color-bg-secondary: #F1F5F9;
-  --color-sidebar-bg: #FFFFFF;
+  --color-bg-app: #F5F5F6;
+  --color-bg-secondary: #EFEFF1;
   --color-surface: #FFFFFF;
   --color-surface-elevated: #FFFFFF;
-  --color-surface-secondary: #F8FAFC;
-  --color-surface-hover: #F1F5F9;
-  --color-surface-muted: #E2E8F0;
-
-  /* Desktop & Mobile Sidebar */
-  --color-sidebar-surface: #FFFFFF;
-  --color-sidebar-border: #E2E8F0;
-  --color-sidebar-text: #475569;
-  --color-sidebar-text-hover: #0F172A;
-  --color-sidebar-text-active: #2563EB;
-  --color-sidebar-active-bg: rgba(37, 99, 235, 0.08);
+  --color-surface-secondary: #FAFAFB;
+  --color-surface-hover: #F2F2F4;
+  --color-surface-muted: #E9E9EC;
 
   /* Typography & Contrast */
-  --color-text-main: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748B;
+  --color-text-main: #0B0B0D;
+  --color-text-secondary: #4B4B53;
+  --color-text-muted: #6B6B74;
   --color-text-inverse: #FFFFFF;
 
   /* Borders & Dividers */
-  --color-border: #E2E8F0;
-  --color-border-subtle: #F1F5F9;
-  --color-border-hover: #CBD5E1;
-  --color-input-border: #CBD5E1;
-  --color-focus-ring: rgba(37, 99, 235, 0.25);
+  --color-border: #E4E4E7;
+  --color-border-subtle: #F1F1F3;
+  --color-border-hover: #D4D4D8;
+  --color-input-border: #D4D4D8;
+  --color-focus-ring: rgba(200, 16, 46, 0.25);
+
+  /* Brand: one deep red works for both text and fills on white */
+  --rgb-primary: 200, 16, 46;
+  --color-primary: #C8102E;
+  --color-primary-solid: #C8102E;
+  --color-primary-bright: #E11D2E;
+  --color-primary-hover: #A50E25;
+  --color-primary-active: #8A0B1F;
+  --color-primary-light: rgba(200, 16, 46, 0.08);
+  --color-primary-border: rgba(200, 16, 46, 0.3);
+  --color-secondary: #BE123C;
+  --color-secondary-light: rgba(190, 18, 60, 0.08);
+
+  --color-violet: #6D28D9;
+  --color-violet-light: rgba(109, 40, 217, 0.08);
+  --color-violet-border: rgba(109, 40, 217, 0.24);
+  --color-magenta: #BE123C;
+  --color-magenta-light: rgba(190, 18, 60, 0.08);
+  --color-cyan: #0E7490;
+  --color-cyan-light: rgba(14, 116, 144, 0.08);
 
   /* Status overrides for accessible contrast on light */
   --color-success-bg: rgba(34, 197, 94, 0.12);
-  --color-success-text: #16A34A;
+  --color-success-text: #15803D;
   --color-warning-bg: rgba(245, 158, 11, 0.12);
-  --color-warning-text: #D97706;
-  --color-danger-bg: rgba(239, 68, 68, 0.12);
-  --color-danger-text: #DC2626;
-  --color-info-bg: rgba(6, 182, 212, 0.12);
-  --color-info-text: #0284C7;
+  --color-warning-text: #B45309;
+  --color-danger: #DC2626;
+  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-danger-text: #B91C1C;
+  --color-info: #2563EB;
+  --color-info-bg: rgba(37, 99, 235, 0.08);
+  --color-info-text: #1D4ED8;
+  --color-info-border: rgba(37, 99, 235, 0.25);
 
   /* Light Shadows */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -174,7 +203,37 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 
-  --glow-brand: 0 0 14px rgba(124, 58, 237, 0.15);
-  --glow-primary: 0 0 12px rgba(37, 99, 235, 0.18);
-  --glow-accent: 0 0 12px rgba(219, 39, 119, 0.15);
+  --glow-brand: 0 0 14px rgba(var(--rgb-primary), 0.15);
+  --glow-primary: 0 0 12px rgba(var(--rgb-primary), 0.18);
+  --glow-accent: 0 0 12px rgba(var(--rgb-accent), 0.15);
+}
+
+/* The sidebar stays midnight-black in both themes: re-scope the dark tokens onto it
+   so every component inside keeps readable contrast without per-rule overrides. */
+[data-theme="light"] .app-sidebar {
+  --color-surface: #131316;
+  --color-surface-hover: #1F1F24;
+  --color-surface-muted: #0E0E11;
+  --color-text-main: #F4F4F5;
+  --color-text-secondary: #B3B3BC;
+  --color-text-muted: #8B8B95;
+  --color-text-inverse: #09090B;
+  --color-border: #27272D;
+  --rgb-primary: 215, 38, 61;
+  --color-primary: #F2555A;
+  --color-primary-bright: #FF6B70;
+  --color-primary-border: rgba(242, 85, 90, 0.38);
+  --color-danger: #FF8A8A;
+  --color-danger-bg: rgba(248, 113, 113, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -14,7 +14,7 @@
 }
 
 .select-wrapper:focus-within {
-  border-color: var(--color-border-focus);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
@@ -33,7 +33,7 @@
 
 /* Ensure all options are readable across dark/light themes and browsers */
 .select-control option {
-  background-color: var(--color-surface, #181926);
+  background-color: var(--color-surface);
   color: var(--color-text-main, #f8fafc);
   padding: 10px 14px;
   font-size: 14px;
@@ -45,13 +45,13 @@
 }
 
 [data-theme="dark"] .select-control option {
-  background-color: #151624;
-  color: #f8fafc;
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-main);
 }
 
 .select-control option:checked,
 .select-control option:hover {
-  background-color: var(--color-primary, #6366f1) !important;
+  background-color: var(--color-primary-solid) !important;
   color: #ffffff !important;
 }
 

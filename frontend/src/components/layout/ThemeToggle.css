@@ -18,7 +18,7 @@
   background: var(--color-surface-hover);
   color: var(--color-primary-bright);
   border-color: var(--color-primary-border);
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 10px rgba(var(--rgb-primary), 0.15);
 }
 
 .theme-toggle-icon {
@@ -34,5 +34,5 @@
 }
 
 .moon-icon {
-  color: #818CF8;
+  color: var(--color-primary-bright);
 }
