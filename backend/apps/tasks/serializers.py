@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from datetime import datetime, time, timedelta
-from apps.tasks.models import Task
+from apps.tasks.models import Task, MAX_TASK_POINTS
 from apps.accounts.models import User
 from apps.teams.models import Team, Group
 from apps.accounts.serializers import UserSummarySerializer
@@ -28,7 +28,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'task_id', 'title', 'description', 'created_by', 'assigned_to', 'assigned_to_id',
             'team', 'team_id', 'team_name', 'group', 'group_id', 'group_name',
             'parent_task', 'parent_task_title', 'subtasks_count',
-            'status', 'deadline', 'deadline_display', 'created_at',
+            'status', 'priority', 'points', 'deadline', 'deadline_display', 'created_at',
             'proofs_count', 'proof_count', 'latest_proof', 'is_overdue'
         ]
         read_only_fields = [
@@ -47,7 +47,10 @@ class TaskSerializer(serializers.ModelSerializer):
         return obj.proofs.count()
 
     def get_latest_proof(self, obj):
-        proof = obj.proofs.order_by('-submitted_at').first()
+        # Read from the prefetch cache (TaskViewSet prefetches proofs + submitters) instead of
+        # issuing one query per task in list responses.
+        proofs = list(obj.proofs.all())
+        proof = max(proofs, key=lambda p: p.submitted_at) if proofs else None
         if proof:
             return {
                 'proof_id': proof.proof_id,
@@ -116,7 +119,10 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'assigned_to_id', 'team_id', 'group_id', 'parent_task_id', 'deadline']
+        fields = ['title', 'description', 'assigned_to_id', 'team_id', 'group_id', 'parent_task_id', 'priority', 'points', 'deadline']
+        extra_kwargs = {
+            'points': {'min_value': 1, 'max_value': MAX_TASK_POINTS},
+        }
 
     def to_internal_value(self, data):
         data_copy = data.copy() if hasattr(data, 'copy') else dict(data)
