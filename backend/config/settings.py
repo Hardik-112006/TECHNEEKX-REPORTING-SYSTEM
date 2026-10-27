@@ -96,6 +96,14 @@ if USE_SQLITE:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            # Concurrent reviewers previously hit "database is locked" (HTTP 500).
+            # IMMEDIATE transactions take the write lock up front, WAL lets reads proceed
+            # alongside a writer, and the timeout makes contending writers wait instead of failing.
+            'OPTIONS': {
+                'timeout': 20,
+                'transaction_mode': 'IMMEDIATE',
+                'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
+            },
         }
     }
 else:
@@ -144,9 +152,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'config.pagination.StandardPagination',
     'PAGE_SIZE': 20,
 }
+
+# Privileged self-registration keys. Never hardcode these: when unset, Founder
+# self-registration is disabled and Director registrations stay Pending for approval.
+FOUNDER_SETUP_KEY = os.getenv('FOUNDER_SETUP_KEY', '')
+DIRECTOR_SETUP_KEY = os.getenv('DIRECTOR_SETUP_KEY', '')
 
 # SimpleJWT Settings
 access_lifetime_minutes = int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', '60'))
