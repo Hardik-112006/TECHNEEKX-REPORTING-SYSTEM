@@ -1,7 +1,10 @@
+import hmac
+
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.accounts.models import Role, User
-from apps.accounts.permissions import get_role_tier, is_founder, is_official
+from apps.accounts.permissions import get_role_tier, get_user_hierarchy_level, is_founder, is_official
 from apps.teams.models import Team, Group
 
 OFFICIAL_POSITIONS = (
@@ -10,6 +13,11 @@ OFFICIAL_POSITIONS = (
     'Managing Director',
     'Chief Technical Officer'
 )
+
+
+def _setup_key_matches(provided: str, expected: str) -> bool:
+    """Constant-time comparison; an unset (empty) server key never matches."""
+    return bool(expected) and hmac.compare_digest(provided.encode(), expected.encode())
 
 class RoleSerializer(serializers.ModelSerializer):
     tier = serializers.SerializerMethodField()
@@ -39,9 +47,9 @@ class UserSummarySerializer(serializers.ModelSerializer):
         fields = [
             'user_id', 'name', 'email', 'role_id', 'role_name',
             'team_id', 'team_name', 'group_id', 'group_name',
-            'status', 'position', 'role_tier', 'hierarchy_level', 'category'
+            'status', 'position', 'role_tier', 'hierarchy_level', 'category', 'can_post_announcements'
         ]
-        read_only_fields = ['user_id', 'role_id', 'role_name', 'team_id', 'team_name', 'group_id', 'group_name', 'position', 'role_tier', 'hierarchy_level', 'category']
+        read_only_fields = ['user_id', 'role_id', 'role_name', 'team_id', 'team_name', 'group_id', 'group_name', 'position', 'role_tier', 'hierarchy_level', 'category', 'can_post_announcements']
 
     def get_role_tier(self, obj):
         return get_role_tier(obj.role.name) if obj.role else 4
@@ -64,9 +72,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = [
             'user_id', 'name', 'email', 'role_id', 'role_name', 'role', 'team_id', 'team_name',
             'group_id', 'group_name', 'status', 'position', 'created_at',
-            'role_tier', 'hierarchy_level', 'category'
+            'role_tier', 'hierarchy_level', 'category', 'can_post_announcements'
         ]
-        read_only_fields = ['user_id', 'email', 'role_id', 'role_name', 'role', 'team_id', 'team_name', 'group_id', 'group_name', 'position', 'created_at', 'role_tier', 'hierarchy_level', 'category']
+        read_only_fields = ['user_id', 'email', 'role_id', 'role_name', 'role', 'team_id', 'team_name', 'group_id', 'group_name', 'position', 'created_at', 'role_tier', 'hierarchy_level', 'category', 'can_post_announcements']
 
     def get_role_tier(self, obj):
         return get_role_tier(obj.role.name) if obj.role else 4
@@ -142,7 +150,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             attrs['group_id'] = None
             attrs['position'] = 'Director of Operations'
             # Executive Director key verification or safe pending status
-            if auth_key in ('TechNeekX@Director2026', 'TechNeekX@Founder2026', 'TechNeekX@Admin2026'):
+            if _setup_key_matches(auth_key, settings.DIRECTOR_SETUP_KEY) or _setup_key_matches(auth_key, settings.FOUNDER_SETUP_KEY):
                 attrs['status'] = 'Active'
             else:
                 attrs['status'] = 'Pending'
@@ -152,7 +160,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             attrs['group_id'] = None
             attrs['position'] = 'Founder'
             # Strict security invariant: public self-registration as Founder requires master setup key
-            if auth_key not in ('TechNeekX@Founder2026', 'FOUNDER_SETUP_KEY'):
+            if not _setup_key_matches(auth_key, settings.FOUNDER_SETUP_KEY):
                 raise serializers.ValidationError({
                     'auth_key': 'Unauthorized: Public self-registration as Founder is strictly restricted. Valid Administrative Setup Key required.'
                 })
@@ -312,6 +320,10 @@ class UserAdminCreateSerializer(serializers.ModelSerializer):
         if attrs['role'].name == 'Founder':
             if not request_user or not is_founder(request_user):
                 raise serializers.ValidationError({'role_id': "Only a Founder can provision another Founder account."})
+        # Non-Founders may only provision roles strictly below their own
+        if request_user and not is_founder(request_user):
+            if get_user_hierarchy_level(attrs['role'].name) <= request_user.hierarchy_level:
+                raise serializers.ValidationError({'role_id': "You cannot provision a role equal to or higher than your own."})
         return attrs
 
     def create(self, validated_data):
@@ -397,7 +409,7 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['name', 'role_id', 'team_id', 'group_id', 'position', 'status']
+        fields = ['name', 'role_id', 'team_id', 'group_id', 'position', 'status', 'can_post_announcements']
 
     def to_internal_value(self, data):
         data_copy = data.copy() if hasattr(data, 'copy') else dict(data)
@@ -409,15 +421,26 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
             data_copy['group_id'] = data_copy.pop('group')
         return super().to_internal_value(data_copy)
 
-    def validate_role_id(self, role):
+    def validate(self, attrs):
         request = self.context.get('request')
-        request_user = getattr(request, 'user', None)
+        actor = getattr(request, 'user', None)
+        target = self.instance
+        if not actor or not actor.role:
+            raise serializers.ValidationError("Authentication required.")
 
-        # Only Tier 1 users (Founder, Chairman, MD) can assign Tier 1 roles
-        if get_role_tier(role.name) == 1:
-            if not request_user or get_role_tier(request_user.role.name) > 1:
-                raise serializers.ValidationError("Only Founder or Executive Admin can assign Tier 1 roles.")
-        return role
+        if target.user_id == actor.user_id:
+            raise serializers.ValidationError("You cannot change your own role, status, or assignments.")
+
+        # The Founder may manage anyone; everyone else may only manage strictly lower-ranked
+        # users and may only grant roles strictly below their own (PDF fix #7).
+        if not is_founder(actor):
+            actor_level = actor.hierarchy_level
+            if target.hierarchy_level <= actor_level:
+                raise serializers.ValidationError("You can only manage users ranked below you in the hierarchy.")
+            new_role = attrs.get('role')
+            if new_role and get_user_hierarchy_level(new_role.name) <= actor_level:
+                raise serializers.ValidationError({'role_id': "You cannot grant a role equal to or higher than your own."})
+        return attrs
 
 
 class DemoAccountSerializer(serializers.ModelSerializer):

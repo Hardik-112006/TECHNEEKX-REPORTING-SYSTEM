@@ -124,6 +124,28 @@ def is_core_team(user) -> bool:
 def is_board_or_official(user) -> bool:
     return is_official(user) or is_director_of_operations(user)
 
+def can_post_announcements(user) -> bool:
+    """Officials always may publish; anyone else only when explicitly granted the flag."""
+    if not user or not user.is_authenticated or not user.role:
+        return False
+    return is_official(user) or bool(getattr(user, 'can_post_announcements', False))
+
+
+def is_task_assignee(task, user) -> bool:
+    """
+    True when `user` is responsible for delivering `task`: the individually assigned
+    member, or — for tasks with no individual assignee — a member of the assigned group
+    (or of the assigned team when no group is set).
+    """
+    if task.assigned_to_id:
+        return task.assigned_to_id == user.user_id
+    if task.group_id:
+        return user.group_id == task.group_id
+    if task.team_id:
+        return user.team_id == task.team_id
+    return False
+
+
 def can_review_submissions(user) -> bool:
     """
     STRICT REQUIREMENT: Director of Core Operations has inspection-only oversight
@@ -148,6 +170,12 @@ class IsOfficialTeam(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return is_official(request.user)
+
+
+class CanPostAnnouncements(permissions.BasePermission):
+    """Officials, or users granted the can_post_announcements flag."""
+    def has_permission(self, request, view):
+        return can_post_announcements(request.user)
 
 
 class IsFounderOnly(permissions.BasePermission):
